@@ -6,6 +6,8 @@ A tela **Servidor** consulta `/api/server`, protegida pela mesma sessão do pain
 
 O painel coleta uma amostra por minuto, mesmo sem visitantes, enquanto seu processo estiver ativo. Mantém até 1.440 amostras das últimas 24 horas em `runtime/server-metrics.json`. O arquivo contém métricas, não mensagens ou credenciais. O histórico continua após reiniciar o painel; períodos sem coleta permanecem como lacunas.
 
+A interface prioriza armazenamento, memória e bateria. Detalhes técnicos ficam recolhidos. O histórico permite selecionar 1, 6 ou 24 horas e mostra até 60 amostras reais distribuídas pelo período, sem interpolação. A organização foi informada pelo [server-box](https://github.com/felipenalves/server-box), citado no [artigo de Felipe Natanael](https://inovadigitalid.com/news/servidor-j5-prime); a implementação permanece própria e mantém a autenticação do Rota.
+
 - RAM: `MemTotal` e `MemAvailable` de `/proc/meminfo`.
 - Armazenamento: sistema de arquivos da instalação, com espaço disponível para gravação.
 - CPU global: diferenças de `/proc/stat`, quando permitido. Carga: `/proc/loadavg`.

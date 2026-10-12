@@ -228,6 +228,31 @@ test('panel routes show one screen and retain unsaved fields, including unknown 
   assert.equal(vm.runInContext('dirty',f.context),true);
 });
 
+test('server meters distinguish exhausted resources from unavailable readings',async()=>{
+  const f=await uiFixture();
+  vm.runInContext("serverVital('memory',{available:true},'0 B','Memória disponível',100,true)",f.context);
+  assert.equal(f.el('server-memory-value').textContent,'0 B');
+  assert.equal(f.el('server-memory-meter').hidden,false);
+  assert.equal(f.el('server-memory-meter').value,100);
+  vm.runInContext("serverVital('memory',{available:false},'0 B','Memória disponível',0)",f.context);
+  assert.equal(f.el('server-memory-value').textContent,'Indisponível');
+  assert.equal(f.el('server-memory-meter').hidden,true);
+});
+
+test('server history range selects real samples and bounds displayed rows',async()=>{
+  const f=await uiFixture(),end=Date.parse('2026-10-12T03:00:00Z');
+  f.context.serverFixtureData={timestamp:new Date(end).toISOString(),history:Array.from({length:180},(_,i)=>({timestamp:new Date(end-i*60000).toISOString(),memoryPercent:50,freeBytes:1024,batteryPercent:75,cpuPercent:null}))};
+  f.el('server-range').value='1';vm.runInContext('serverHistoryRows(serverFixtureData)',f.context);
+  assert.equal(f.el('server-history').children.length,60);
+  assert.match(f.el('server-history-caption').textContent,/60 de 61/);
+  f.el('server-range').value='24';vm.runInContext('serverHistoryRows(serverFixtureData)',f.context);
+  assert.equal(f.el('server-history').children.length,60);
+  assert.match(f.el('server-history-caption').textContent,/60 de 180/);
+  f.context.serverFixtureData.history=[];vm.runInContext('serverHistoryRows(serverFixtureData)',f.context);
+  assert.equal(f.el('server-history').children.length,0);
+  assert.match(f.el('server-history-caption').textContent,/Nenhuma amostra/);
+});
+
 test('schedule edits never overwrite group destinations or their IDs',async()=>{
   const f=await uiFixture();
   f.state.config.productionGroupId='fixture-main@g.us';f.state.config.testGroupId='fixture-test@g.us';

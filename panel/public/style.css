@@ -13,13 +13,45 @@
   font-synthesis: none;
 }
 .resource-list { margin: 0; }
-.resource-list > div { display: grid; grid-template-columns: minmax(145px, 1fr) minmax(0, 2fr); gap: 18px; padding: 15px 0; border-bottom: 1px solid var(--line); }
+.resource-list > div { display: grid; grid-template-columns: minmax(110px, 1fr) minmax(0, 1.5fr); gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
 .resource-list > div:last-child { border-bottom: 0; }
 .resource-list dt { color: var(--muted); }
 .resource-list dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
-#server-alerts .notice { margin-bottom: 12px; }
+#server-alerts .notice { margin: 0; max-width: none; border: 0; border-radius: 0; padding: 8px 0; background: transparent; }
 #server-history { font-variant-numeric: tabular-nums; }
 @media (max-width: 600px) { .resource-list > div { grid-template-columns: 1fr; gap: 5px; } #server .title-row { align-items: flex-start; flex-wrap: wrap; gap: 15px; } }
+.server-title { margin-bottom: 24px; }
+.server-title p { margin: 8px 0 0; font-size: 13px; }
+.server-device { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 20px; }
+.server-device h2 { margin-bottom: 5px; font-size: 22px; }
+.server-device p { margin: 0; font-size: 13px; }
+.server-resource-board { margin-bottom: 20px; }
+.server-vitals { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 28px; margin: 22px 0 0; }
+.server-vitals > div + div { border-left: 1px solid var(--line); padding-left: 28px; }
+.server-vitals dt { font-size: 14px; color: var(--muted); margin-bottom: 14px; }
+.server-vitals dd { margin: 0; }
+.server-vitals strong { display: block; font-size: 28px; font-weight: 650; letter-spacing: -.025em; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.server-vitals small { display: block; margin: 8px 0 16px; font-size: 13px; }
+.server-vitals progress { display: block; appearance: none; width: 100%; height: 7px; border: 0; border-radius: 4px; overflow: hidden; background: var(--line); accent-color: var(--blue); }
+.server-vitals progress::-webkit-progress-bar { background: var(--line); border-radius: 4px; }
+.server-vitals progress::-webkit-progress-value { background: var(--blue); border-radius: 4px; }
+.server-vitals progress::-moz-progress-bar { background: var(--blue); border-radius: 4px; }
+.server-vitals .meter-warning::-webkit-progress-value { background: #986613; }
+.server-vitals .meter-warning::-moz-progress-bar { background: #986613; }
+.server-alert-list { margin-bottom: 20px; padding: 8px 20px; background: #fff8e8; border: 1px solid #e3cc97; border-radius: 12px; color: #765015; }
+.server-alert-list:empty { display: none; }
+.server-operation-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 20px; margin-bottom: 20px; }
+.server-technical { margin-bottom: 20px; }
+.server-technical summary { cursor: pointer; font-weight: 650; min-height: 24px; }
+.server-technical[open] summary { margin-bottom: 20px; }
+.server-technical > p { font-size: 13px; margin: 14px 0 0; }
+.server-history-card .section-head { align-items: center; }
+.server-history-card .section-head h2 { margin: 0; }
+.server-range-label { display: flex; gap: 12px; align-items: center; margin: 0; font-size: 13px; }
+.server-range-label select { width: auto; margin: 0; min-height: 44px; padding: 8px 30px 8px 12px; }
+#server-history-caption { font-size: 13px; margin: 18px 0; }
+@media (max-width: 1100px) { .server-operation-grid { grid-template-columns: 1fr; } .server-vitals { gap: 18px; } .server-vitals > div + div { padding-left: 18px; } .server-vitals strong { font-size: 24px; } }
+@media (max-width: 600px) { .server-device { align-items: flex-start; flex-wrap: wrap; } .server-vitals { grid-template-columns: 1fr; } .server-vitals > div + div { border-left: 0; border-top: 1px solid var(--line); padding: 20px 0 0; } .server-history-card .section-head { align-items: flex-start; flex-direction: column; gap: 16px; } }
 * { box-sizing: border-box; }
 ::selection { background: #f2c94c; color: #142d43; }
 input, textarea { caret-color: var(--blue); }

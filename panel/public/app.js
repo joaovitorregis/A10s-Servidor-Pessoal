@@ -183,20 +183,42 @@ function resourceRows(id, rows) {
   const list=$(id); list.replaceChildren();
   for(const [label,text] of rows) {const row=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=text;row.append(dt,dd);list.append(row);}
 }
-let serverBusy=false,serverTimer;
+let serverBusy=false,serverTimer,serverSnapshot;
+function serverVital(name, metric, main, detail, amount, warning=false) {
+  $('server-'+name+'-value').textContent=metric?.available?main:'Indisponível';
+  $('server-'+name+'-detail').textContent=metric?.available?detail:'Sem leitura do sistema';
+  const meter=$('server-'+name+'-meter');
+  meter.hidden=!metric?.available || !Number.isFinite(amount);
+  if(!meter.hidden)meter.value=Math.max(0,Math.min(100,amount));
+  meter.classList.toggle('meter-warning',warning);
+}
+function serverHistoryRows(s) {
+  const hours=Number($('server-range').value)||1;
+  const end=Date.parse(s.timestamp), cutoff=end-hours*3600000;
+  const samples=s.history.filter(x=>Date.parse(x.timestamp)>=cutoff && Date.parse(x.timestamp)<=end);
+  // Select evenly spaced real samples; do not interpolate across collection gaps.
+  const rows=samples.length<=60?samples:Array.from({length:60},(_,i)=>samples[Math.round(i*(samples.length-1)/59)]);
+  $('server-history').replaceChildren();
+  for(const sample of [...rows].reverse()) {const tr=document.createElement('tr');for(const text of [fmt(sample.timestamp),percent(sample.memoryPercent),bytes(sample.freeBytes),percent(sample.cpuPercent),percent(sample.batteryPercent)]){const td=document.createElement('td');td.textContent=text;tr.append(td);}$('server-history').append(tr);}
+  $('server-history-caption').textContent=samples.length?rows.length+' de '+samples.length+' amostras no período. Coleta a cada minuto.':'Nenhuma amostra neste período.';
+}
 async function refreshServer() {
   if(serverBusy || !csrf) return;
   serverBusy=true;clearTimeout(serverTimer);$('server-refresh').disabled=true;
   try {
     const s=await api('server');
-    $('server-updated').textContent='Coletado em '+fmt(s.timestamp)+'. Atualização a cada minuto.';
+    serverSnapshot=s;
+    $('server-updated').textContent='Última coleta em '+fmt(s.timestamp);
+    $('server-device-meta').textContent=s.system.platform+' / '+s.system.architecture;
+    $('server-executor-state').textContent=s.executor.healthy?'Executor ativo':'Executor requer atenção';
+    $('server-executor-state').classList.toggle('off',!s.executor.healthy);
+    serverVital('disk',s.storage,bytes(s.storage.free),'de '+bytes(s.storage.total)+' · '+percent(s.storage.percent)+' usados',s.storage.percent,s.storage.percent>=90);
+    serverVital('memory',s.memory,bytes(s.memory.free??(typeof s.memory.available==='number'?s.memory.available:null)),'de '+bytes(s.memory.total)+' · '+percent(s.memory.percent)+' usados',s.memory.percent,s.memory.percent>=90);
+    serverVital('battery',s.battery,percent(s.battery.percent),(s.battery.charging?'Com alimentação':'Sem alimentação')+(Number.isFinite(s.battery.temperature)?' · '+s.battery.temperature+' °C':''),s.battery.percent,s.battery.percent<=20&&!s.battery.charging);
     const available=(m,fn)=>m?.available?fn(m):'Indisponível';
     resourceRows('server-resources',[
-      ['Armazenamento',available(s.storage,m=>bytes(m.free)+' livres de '+bytes(m.total)+' · '+percent(m.percent)+' usados')],
-      ['Memória RAM',available(s.memory,m=>bytes(m.available)+' disponíveis de '+bytes(m.total)+' · '+percent(m.percent)+' usados')],
       ['CPU global',available(s.cpu,m=>percent(m.percent))],
       ['Carga (1 / 5 / 15 min)',available(s.load,m=>m.values.map(n=>n.toFixed(2)).join(' / '))],
-      ['Bateria',available(s.battery,m=>m.percent+'% · '+(m.charging?'Com alimentação':'Sem alimentação'))],
       ['Temperatura da bateria',s.battery?.available&&s.battery.temperature!==null?s.battery.temperature+' °C':'Indisponível'],
       ['Tempo desde o boot',available(s.boot,m=>duration(m.seconds))],
       ['Consumo do painel',bytes(s.panel.rss)+' RAM · '+percent(s.panel.cpuPercent)+' de um núcleo'],
@@ -222,15 +244,12 @@ async function refreshServer() {
     ]);
     $('server-alerts').replaceChildren();
     for(const alert of s.alerts) {const p=document.createElement('p');p.className='notice';p.textContent=alert.text;$('server-alerts').append(p);}
-    if(!s.alerts.length) {const p=document.createElement('p');p.className='muted';p.textContent='Nenhum alerta nas métricas disponíveis.';$('server-alerts').append(p);}
-    const unavailable=['memory','storage','cpu','load','battery','boot','network'].filter(k=>!s[k]?.available);
-    if(unavailable.length) {const p=document.createElement('p');p.className='muted';p.textContent='Algumas métricas não são acessíveis neste ambiente. Indisponível não significa zero.';$('server-alerts').append(p);}
-    $('server-history').replaceChildren();
-    for(const sample of s.history.slice(-60).reverse()) {const tr=document.createElement('tr');for(const text of [fmt(sample.timestamp),percent(sample.memoryPercent),bytes(sample.freeBytes),percent(sample.cpuPercent),percent(sample.batteryPercent)]){const td=document.createElement('td');td.textContent=text;tr.append(td);}$('server-history').append(tr);}
-  } catch(error) {$('server-updated').textContent='Sem consulta atual. Os dados abaixo podem estar desatualizados.';toast(error.message,true);}
+    serverHistoryRows(s);
+  } catch(error) {$('server-updated').textContent='Sem consulta atual. Os dados abaixo podem estar desatualizados.';$('server-executor-state').textContent='Sem consulta atual';$('server-executor-state').classList.toggle('off',true);toast(error.message,true);}
   finally {serverBusy=false;$('server-refresh').disabled=false;if(csrf && window.location?.hash==='#server')serverTimer=setTimeout(()=>refreshServer(),60000);}
 }
 $('server-refresh').onclick=()=>refreshServer();
+$('server-range').onchange=()=>{if(serverSnapshot)serverHistoryRows(serverSnapshot);};
 function navigatePanel() {
   const requested = (window.location?.hash || '#overview').slice(1);
   const route = panelRoutes.includes(requested) ? requested : 'overview';
