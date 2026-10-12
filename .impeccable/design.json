@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-12T14:05:46-03:00",
+  "title": "A10s",
+  "extensions": {
+    "colorMeta": {
+      "ink": { "role": "neutral", "displayName": "Texto principal", "tonalRamp": ["oklch(15% .008 260)", "oklch(26% .008 260)", "oklch(37% .008 260)", "oklch(48% .008 260)", "oklch(59% .008 260)", "oklch(70% .008 260)", "oklch(81% .008 260)", "oklch(95% .008 260)"] },
+      "blue": { "role": "primary", "displayName": "Ação e foco", "tonalRamp": ["oklch(15% .06 255)", "oklch(26% .06 255)", "oklch(37% .06 255)", "oklch(48% .06 255)", "oklch(59% .06 255)", "oklch(70% .06 255)", "oklch(81% .06 255)", "oklch(95% .06 255)"] },
+      "yellow": { "role": "secondary", "displayName": "Atenção", "tonalRamp": ["oklch(15% .05 85)", "oklch(26% .05 85)", "oklch(37% .05 85)", "oklch(48% .05 85)", "oklch(59% .05 85)", "oklch(70% .05 85)", "oklch(81% .05 85)", "oklch(95% .05 85)"] },
+      "fog": { "role": "neutral", "displayName": "Fundo", "tonalRamp": ["oklch(15% .012 260)", "oklch(26% .012 260)", "oklch(37% .012 260)", "oklch(48% .012 260)", "oklch(59% .012 260)", "oklch(70% .012 260)", "oklch(81% .012 260)", "oklch(95% .012 260)"] },
+      "paper": { "role": "neutral", "displayName": "Superfície", "tonalRamp": ["oklch(15% .014 260)", "oklch(26% .014 260)", "oklch(37% .014 260)", "oklch(48% .014 260)", "oklch(59% .014 260)", "oklch(70% .014 260)", "oklch(81% .014 260)", "oklch(95% .014 260)"] },
+      "muted": { "role": "neutral", "displayName": "Texto secundário", "tonalRamp": ["oklch(15% .024 265)", "oklch(26% .024 265)", "oklch(37% .024 265)", "oklch(48% .024 265)", "oklch(59% .024 265)", "oklch(70% .024 265)", "oklch(81% .024 265)", "oklch(95% .024 265)"] },
+      "line": { "role": "neutral", "displayName": "Borda", "tonalRamp": ["oklch(15% .023 260)", "oklch(26% .023 260)", "oklch(37% .023 260)", "oklch(48% .023 260)", "oklch(59% .023 260)", "oklch(70% .023 260)", "oklch(81% .023 260)", "oklch(95% .023 260)"] },
+      "success": { "role": "tertiary", "displayName": "Confirmação", "tonalRamp": ["oklch(15% .04 165)", "oklch(26% .04 165)", "oklch(37% .04 165)", "oklch(48% .04 165)", "oklch(59% .04 165)", "oklch(70% .04 165)", "oklch(81% .04 165)", "oklch(95% .04 165)"] }
+    },
+    "typographyMeta": {
+      "body": { "displayName": "Leitura", "purpose": "Texto e controles sem fontes externas." },
+      "headline": { "displayName": "Cabeçalho de seção", "purpose": "Identificação da seção no cabeçalho principal." },
+      "title": { "displayName": "Título interno", "purpose": "Identificação de grupos dentro das superfícies." },
+      "label": { "displayName": "Rótulo", "purpose": "Identificação dos campos." }
+    },
+    "shadows": [
+      { "name": "dialog", "value": "0 20px 70px #0006", "purpose": "Separar o diálogo do conteúdo." },
+      { "name": "toast", "value": "0 8px 30px #0004", "purpose": "Destacar retorno temporário." },
+      { "name": "notifications", "value": "0 12px 32px #0005", "purpose": "Separar a lista de avisos." }
+    ],
+    "motion": [
+      { "name": "button-state", "value": "background .15s, border-color .15s", "purpose": "Transição dos estados de botão; removida com movimento reduzido." }
+    ],
+    "breakpoints": [
+      { "name": "compact-resource-row", "value": "360px" },
+      { "name": "mobile-navigation", "value": "760px" },
+      { "name": "single-operation-column", "value": "1100px" },
+      { "name": "wide-content-padding", "value": "1600px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Botão primário", "kind": "button", "refersTo": "button-primary",
+      "description": "Ação principal dos controles.",
+      "html": "<button class=\"ds-primary\">Salvar</button>",
+      "css": ".ds-primary{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:11px 16px;border:1px solid var(--blue,#84b9ff);border-radius:7px;background:var(--blue,#84b9ff);color:var(--fog,#101317);font:650 13px/1.5 'Segoe UI',Arial,sans-serif;cursor:pointer;transition:background .15s,border-color .15s}.ds-primary:hover:not(:disabled){background:#b3caff;border-color:#b3caff}.ds-primary:focus-visible{outline:3px solid var(--blue,#84b9ff);outline-offset:4px}.ds-primary:active:not(:disabled){filter:brightness(.94)}.ds-primary:disabled{opacity:.55;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-primary{transition:none}}"
+    },
+    {
+      "name": "Campo", "kind": "input", "refersTo": "input",
+      "description": "Campo de texto dos formulários.",
+      "html": "<label class=\"ds-label\">Horário<input class=\"ds-input\" value=\"07:00\"></label>",
+      "css": ".ds-label{display:grid;gap:8px;color:var(--ink,#f0f2f5);font:600 13px 'Segoe UI',Arial,sans-serif}.ds-input{min-width:0;min-height:44px;padding:11px 13px;border:1px solid #414b5a;border-radius:7px;background:#11151b;color:var(--ink,#f0f2f5);font:14px 'Segoe UI',Arial,sans-serif;caret-color:var(--blue,#84b9ff)}.ds-input:hover{border-color:#63728a}.ds-input:focus{border-color:var(--blue,#84b9ff)}.ds-input:focus-visible{outline:3px solid var(--blue,#84b9ff);outline-offset:4px}"
+    },
+    {
+      "name": "Navegação", "kind": "nav", "refersTo": "navigation",
+      "description": "Seleção de seção da barra lateral.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Seções\"><a class=\"ds-link ds-active\" href=\"#server\" aria-current=\"page\">Visão geral</a><a class=\"ds-link\" href=\"#rota\">Automações</a></nav>",
+      "css": ".ds-nav{display:grid;gap:6px;background:#161d29;padding:16px}.ds-link{display:flex;align-items:center;min-height:46px;padding:12px 16px;border:1px solid transparent;border-radius:8px;color:var(--muted,#b4bdce);font:14px 'Segoe UI',Arial,sans-serif;text-decoration:none}.ds-active{background:#293c57;border-color:#3a5273;color:#dceaff;font-weight:650}.ds-link:hover{background:#242b35}.ds-link:focus-visible{outline:3px solid var(--yellow,#e9c46a);outline-offset:4px}"
+    },
+    {
+      "name": "Indicador de estado", "kind": "chip", "refersTo": "chip",
+      "description": "Estado textual do executor.",
+      "html": "<span class=\"ds-pill\">Ativo</span>",
+      "css": ".ds-pill{display:inline-block;background:#173b30;color:#a3e6c5;border-radius:20px;padding:6px 10px;font:650 12px 'Segoe UI',Arial,sans-serif;white-space:nowrap}"
+    },
+    {
+      "name": "Cartão", "kind": "card", "refersTo": "card",
+      "description": "Superfície de recursos, serviços ou controles.",
+      "html": "<section class=\"ds-card\"><h2 class=\"ds-title\">Serviços</h2><p class=\"ds-body\">Estado do executor</p></section>",
+      "css": ".ds-card{padding:24px;border:1px solid var(--line,#343b47);border-radius:16px;background:var(--paper,#191d23);color:var(--ink,#f0f2f5);font-family:'Segoe UI',Arial,sans-serif}.ds-title{margin:0 0 12px;font-size:16px;font-weight:650;line-height:1.35}.ds-body{margin:0;color:var(--muted,#b4bdce);font-size:13px;line-height:1.65}@media(max-width:760px){.ds-card{padding:20px}}"
+    }
+  ],
+  "narrative": {
+    "overview": "Servidor pessoal Android com a automação Rota como módulo. A entrada mostra recursos do aparelho e serviços; controles de envio pertencem à Rota. A interface usa superfícies escuras, navegação persistente e uma área ampla de trabalho.",
+    "keyCharacteristics": [],
+    "rules": [],
+    "dos": [
+      "Do manter os últimos valores com aviso explícito quando não houver consulta recente.",
+      "Do preservar significado além da cor no foco de teclado, medidores e estados.",
+      "Do manter formulários montados ao navegar para preservar edições não salvas."
+    ],
+    "donts": [
+      "Don't representar leituras ausentes como zero.",
+      "Don't apresentar executor ativo como comprovação de entrega.",
+      "Don't adicionar fontes externas ou animações decorativas."
+    ]
+  }
+}
