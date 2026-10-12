@@ -464,3 +464,55 @@ body .server-charts { gap: 32px; }
   body .server-vitals > div:nth-child(2), body .server-vitals > div:nth-child(3) { border: 0; padding-left: 0; }
   body .server-automation .automation-row > span:nth-child(2) { font-size: 13px; }
 }
+/* Overview-only pilot. Other routes retain their established design. */
+#server {
+  --paper: #181b20;
+  --fog: #111318;
+  --line: #343941;
+  --muted: #a8afb9;
+  --ink: #e9edf2;
+}
+#server:not([hidden]) { display: flex; flex-direction: column; gap: 16px; }
+#server .server-title { order: 0; margin: 0; }
+#server .server-device { order: 1; margin: 0; padding-block: 0 4px; }
+#server .server-device h2 { font-size: 15px; font-weight: 600; }
+#server .server-resource-board { order: 2; padding: 0; border: 0; background: transparent; margin: 0; }
+#server .server-resource-board > h2 { margin-bottom: 12px; font-size: 13px; color: var(--muted); }
+#server .server-vitals { margin: 0; gap: 12px; }
+#server .server-vitals > div, #server .server-vitals > div:nth-child(2), #server .server-vitals > div:nth-child(3) { border: 1px solid var(--line); background: var(--paper); border-radius: 4px; padding: 16px; gap: 10px; }
+#server .server-vitals dt { color: var(--muted); font-size: 13px; font-weight: 500; }
+#server .server-vitals strong, #server .server-vitals > div:first-child strong, #server .server-vitals > div:nth-child(2) strong, #server .server-vitals > div:nth-child(3) strong { color: var(--ink); font-size: 30px; font-weight: 500; letter-spacing: -.015em; }
+#server .server-vitals progress { border-radius: 0; height: 4px; }
+#server .server-vitals progress::-webkit-progress-value, #server .server-vitals progress::-webkit-progress-bar { border-radius: 0; }
+#server .server-vitals progress::-moz-progress-bar { border-radius: 0; }
+#server #server-alerts { order: 3; margin: 0; }
+#server #server-alerts:empty { display: none; }
+#server .server-history-card { order: 4; margin: 0; padding: 16px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); }
+#server .server-history-card > .section-head { margin-bottom: 12px; }
+#server .server-history-card > .section-head h2 { font-size: 14px; font-weight: 600; }
+#server .server-charts { margin: 0; gap: 12px; }
+#server .resource-chart { padding: 14px; border: 1px solid #2c3139; border-radius: 3px; background: #14171c; }
+#server .resource-chart figcaption { font-size: 13px; }
+#server .resource-chart strong { color: var(--ink); font-size: 22px; font-weight: 500; }
+#server .resource-chart svg { margin-top: 16px; }
+#server .resource-chart > small { padding: 6px 0; margin-top: 8px; min-height: 28px; color: var(--muted); font-size: 12px; }
+#server .chart-gridline { stroke: #30353e; }
+#server .history-samples { margin-top: 14px; padding-top: 6px; }
+#server .history-samples summary { padding-block: 10px; }
+#server .server-operation-grid { order: 5; gap: 12px; margin: 0; align-items: start; }
+#server .server-operation-grid > .card { background: var(--paper); border-color: var(--line); border-radius: 4px; padding: 16px; }
+#server .server-operation-grid h2 { font-size: 14px; font-weight: 600; }
+#server .resource-list > div { padding-block: 8px; font-size: 13px; }
+#server .server-technical { order: 6; margin: 0; padding: 12px 16px; border-radius: 4px; border-color: var(--line); background: transparent; }
+#server .server-automation .automation-row { padding: 8px 0 16px; }
+#server .module-manage { border-radius: 3px; background: #222832; border-color: #465261; color: #d5e5f9; min-height: 40px; }
+#server .module-manage:hover { background: #303a48; }
+#server .server-title button { background: #222832; border-color: #465261; border-radius: 3px; }
+#server .server-title button:hover { background: #303a48; }
+#server .server-range-label select { border-radius: 3px; }
+@media(max-width:760px) {
+  #server .server-vitals > div, #server .server-vitals > div:nth-child(2), #server .server-vitals > div:nth-child(3) { padding: 14px; }
+  #server .server-vitals strong, #server .server-vitals > div:first-child strong, #server .server-vitals > div:nth-child(2) strong, #server .server-vitals > div:nth-child(3) strong { font-size: 21px; }
+  #server .server-charts { grid-template-columns: 1fr; }
+  #server .server-history-card > .section-head { flex-direction: row; align-items: center; }
+}
