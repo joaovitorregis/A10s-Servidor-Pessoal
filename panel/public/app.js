@@ -258,7 +258,7 @@ function resourceChartModel(samples,key,start,end) {
 function renderResourceCharts(samples,start,end) {
   const container=$('server-charts');container.replaceChildren();
   const svgNode=(tag,attrs,text)=>{const node=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const [key,value] of Object.entries(attrs))node.setAttribute(key,String(value));if(text!==undefined)node.textContent=text;return node;};
-  for(const [key,label,color] of [['memoryPercent','Memória usada','#b7a7eb'],['freeBytes','Espaço livre','#86b8e1'],['batteryPercent','Bateria','#8dceb1']]) {
+  for(const [key,label,color] of [['memoryPercent','Memória usada','#805ad5'],['freeBytes','Espaço livre','#3978ce'],['batteryPercent','Bateria','#16856b']]) {
     const model=resourceChartModel(samples,key,start,end),figure=document.createElement('figure'),heading=document.createElement('figcaption'),title=document.createElement('span'),value=document.createElement('strong');
     figure.className='resource-chart';title.textContent=label;value.textContent=model.last?(key==='freeBytes'?bytes(model.last[key]):percent(model.last[key])):'Sem leitura';heading.append(title,value);figure.append(heading);
     const plot=svgNode('svg',{viewBox:'0 0 328 112',role:'img','aria-label':label+': '+model.count+' leituras; linhas interrompidas indicam lacunas.'});
@@ -268,7 +268,7 @@ function renderResourceCharts(samples,start,end) {
     plot.append(svgNode('text',{x:36,y:109,class:'chart-axis'},time(start)),svgNode('text',{x:320,y:109,'text-anchor':'end',class:'chart-axis'},time(end)));
     figure.append(plot);const note=document.createElement('small');note.textContent=model.count?model.count+' leituras'+(model.segments.length>1?' · com lacunas':'')+(end-Date.parse(model.last.timestamp)>150000?' · última em '+time(Date.parse(model.last.timestamp)):''):'Nenhuma leitura neste período';figure.append(note);
     if(model.count) {
-      const points=model.segments.flat(),cursor=svgNode('circle',{r:4,fill:color,stroke:'#101317','stroke-width':2}),guide=svgNode('line',{y1:18,y2:90,stroke:color,'stroke-width':1,'stroke-dasharray':'3 4',opacity:.65}),scrub=document.createElement('input');
+      const points=model.segments.flat(),cursor=svgNode('circle',{r:4,fill:color,stroke:'#ffffff','stroke-width':2}),guide=svgNode('line',{y1:18,y2:90,stroke:color,'stroke-width':1,'stroke-dasharray':'3 4',opacity:.65}),scrub=document.createElement('input');
       scrub.type='range';scrub.min='0';scrub.max=String(points.length-1);scrub.value=String(points.length-1);scrub.step='1';scrub.className='chart-scrubber';scrub.setAttribute('aria-label','Selecionar leitura de '+label);
       const selectPoint=index=>{const p=points[index],reading=key==='freeBytes'?bytes(p.value*1024**3):percent(p.value);value.textContent=reading;cursor.setAttribute('cx',p.x);cursor.setAttribute('cy',p.y);guide.setAttribute('x1',p.x);guide.setAttribute('x2',p.x);note.textContent=time(p.time)+' · '+reading;scrub.setAttribute('aria-valuetext',note.textContent);};
       scrub.oninput=()=>selectPoint(Number(scrub.value));scrub.onfocus=()=>selectPoint(Number(scrub.value));

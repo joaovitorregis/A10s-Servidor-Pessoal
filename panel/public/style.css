@@ -1,17 +1,17 @@
 :root {
-  color-scheme: dark;
-  --ink: #f0f2f5;
-  --blue: #84b9ff;
-  --yellow: #e9c46a;
-  --fog: #101317;
-  --paper: #191d23;
-  --muted: #b4bdce;
-  --line: #343b47;
-  --success: #91d7b9;
-  --surface-raised: #212936;
-  --surface-blue: #1b2b3e;
-  --surface-violet: #29243b;
-  --surface-green: #1b302c;
+  color-scheme: light;
+  --ink: #242632;
+  --blue: #7046cd;
+  --yellow: #946216;
+  --fog: #f6f7f9;
+  --paper: #ffffff;
+  --muted: #656b78;
+  --line: #e3e5eb;
+  --success: #17795c;
+  --surface-raised: #ffffff;
+  --surface-blue: #eff4fb;
+  --surface-violet: #f3effb;
+  --surface-green: #edf7f2;
   font-family: "Segoe UI", Arial, sans-serif;
   color: var(--ink);
   background: var(--fog);
@@ -463,4 +463,81 @@ body .server-charts { gap: 32px; }
 @media(max-width:760px) {
   body .server-vitals > div:nth-child(2), body .server-vitals > div:nth-child(3) { border: 0; padding-left: 0; }
   body .server-automation .automation-row > span:nth-child(2) { font-size: 13px; }
+}
+/* Light operational surface informed by the supplied Pivora CRM reference. */
+body .sidebar { background: #fafafb; border-color: var(--line); padding-top: 24px; }
+body .brand { font-size: 24px; color: var(--ink); }
+body .nav-link.active { color: #5633a5; background: #eee8fa; border-color: transparent; }
+body .nav-link:hover, body .server-card .quiet:hover { background: #eeeef3; color: var(--ink); }
+body .module-link.active { background: #eee8fa; color: #5633a5; }
+body .module-link:hover { background: #f0edf6; }
+body main > header { min-height: 72px; margin-bottom: 20px; }
+body .breadcrumbs { font-size: 18px; }
+body .card { border-radius: 12px; padding: 20px; }
+body h2 { font-size: 14px; }
+body .server-title { margin-bottom: 18px; }
+body .server-device { margin-bottom: 20px; }
+body .server-resource-board { padding: 0; border: 0; background: transparent; }
+body .server-resource-board > h2 { margin-bottom: 12px; }
+body .server-vitals { gap: 16px; margin-top: 0; }
+body .server-vitals > div, body .server-vitals > div:nth-child(2), body .server-vitals > div:nth-child(3) { padding: 18px; border: 1px solid var(--line); background: var(--paper); border-radius: 12px; }
+body .server-vitals dt { font-size: 13px; color: var(--muted); }
+body .server-vitals strong, body .server-vitals > div:first-child strong, body .server-vitals > div:nth-child(2) strong, body .server-vitals > div:nth-child(3) strong { color: var(--ink); font-size: 25px; }
+body .server-vitals progress::-webkit-progress-bar { background: #edeef3; }
+body #server-disk-meter::-webkit-progress-value { background: #3978ce; }
+body #server-memory-meter::-webkit-progress-value { background: #805ad5; }
+body #server-battery-meter::-webkit-progress-value { background: #16856b; }
+body #server-disk-meter::-moz-progress-bar { background: #3978ce; }
+body #server-memory-meter::-moz-progress-bar { background: #805ad5; }
+body #server-battery-meter::-moz-progress-bar { background: #16856b; }
+body .server-vitals .meter-warning::-webkit-progress-value { background: #aa721c !important; }
+body .server-vitals .meter-warning::-moz-progress-bar { background: #aa721c !important; }
+body .primary { color: #fff; }
+body .primary:hover:not(:disabled) { background: #5834b1; border-color: #5834b1; }
+body .secondary, body .module-manage, body .server-title button { background: #fff; color: var(--ink); border-color: #d9dce5; }
+body .secondary:hover:not(:disabled), body .module-manage:hover { background: #f2eff9; border-color: #a998d1; }
+body .module-manage { min-height: 40px; }
+body .notification-button { background: #fff; color: #656b78; border-color: #d9dce5; }
+body .notification-button:hover { background: #eee8fa; }
+body .notification-panel { background: #fff; border-color: var(--line); box-shadow: 0 12px 32px #3036491f; }
+body .notification-item.warning p { color: #805a17; }
+body .notification-item.critical p { color: #a33243; }
+body .resource-list .resource-state-warning { background: #fff6e6; }
+body .resource-state-warning dt, body .resource-state-warning dd { color: #805a17; }
+body .pill, body .result { background: #eaf5ef; color: #17795c; }
+body .pill.off, body .result.warn, body .pause-chip { background: #fff4df; color: #805a17; border-color: #ead8af; }
+body .result.bad { background: #fcecef; color: #a33243; }
+#server-executor-state { border-color: #c5e5d6; }
+#server-executor-state.off { border-color: #ead8af; }
+body .notice, body .server-alert-list { background: #fff6e6; color: #805a17; border-color: #ead8af; }
+body .resource-chart:nth-child(1) figcaption span { color: #7046b8; }
+body .resource-chart:nth-child(2) figcaption span { color: #2e67af; }
+body .resource-chart:nth-child(3) figcaption span { color: #147258; }
+body .resource-chart:nth-child(1) .chart-scrubber { accent-color: #805ad5; }
+body .resource-chart:nth-child(2) .chart-scrubber { accent-color: #3978ce; }
+body .resource-chart:nth-child(3) .chart-scrubber { accent-color: #16856b; }
+body input:not([type=checkbox]), body textarea, body select, body #whatsapp select { background: #fff; color: var(--ink); border-color: #d9dce5; }
+body .day-picker label { background: #fff; border-color: #d9dce5; }
+body .day-picker label:has(input:checked) { background: #eee8fa; color: #5633a5; border-color: #a998d1; }
+body th { background: #f8f9fb; }
+body tbody tr:hover { background: #faf9fd; }
+body .chat-wall { background: #f2f6f3; border-color: #dfe9e2; }
+body .message-bubble { background: #fff; border-color: #dfe9e2; }
+body .departure { background: #f3effb; border-color: #e2d9f4; }
+body .departure > span, body .departure small { color: var(--muted); }
+body .metric strong.attention { color: #805a17; }
+body .error, body .login-card .error { color: #a33243 !important; }
+body .toast { background: #303342; color: #fff; }
+body .toast.error { background: #9d3140; }
+body dialog { background: #fff; box-shadow: 0 20px 70px #30364930; }
+body .login-card { background: #fff; }
+::selection { background: #dfd2fa; color: #302343; }
+* { scrollbar-color: #bec2cc var(--fog); }
+@media(max-width:760px) {
+  body .server-vitals > div, body .server-vitals > div:nth-child(2), body .server-vitals > div:nth-child(3) { padding: 16px; }
+  body .server-vitals strong, body .server-vitals > div:first-child strong, body .server-vitals > div:nth-child(2) strong, body .server-vitals > div:nth-child(3) strong { font-size: 18px; }
+  body .server-vitals > div { grid-template-columns: minmax(60px,1fr) minmax(25px,.7fr) minmax(90px,1.2fr); }
+}
+@media(max-width:360px) {
+  body .server-vitals > div { grid-template-columns: minmax(0,1fr) minmax(0,1.3fr); }
 }
