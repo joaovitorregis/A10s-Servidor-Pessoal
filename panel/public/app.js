@@ -48,6 +48,7 @@ function render(d, fillForms = false) {
   $('enabled-label').textContent = c.sendingEnabled ? 'Ativo' : 'Desativado';
   $('enabled-label').classList.toggle('attention', !c.sendingEnabled);
   $('enabled-detail').textContent = c.sendingEnabled ? 'Envios automáticos habilitados' : 'Próximos envios bloqueados';
+  $('server-rota-state').textContent=c.sendingEnabled?'Envios habilitados':'Envios desativados';
   $('enabled-pill').textContent = c.sendingEnabled ? 'Habilitado' : 'Desabilitado'; $('enabled-pill').classList.toggle('off', !c.sendingEnabled);
   $('health-label').textContent = h.healthy ? 'Saudável' : 'Requer atenção';
   $('health-label').classList.toggle('attention', !h.healthy);
@@ -90,7 +91,7 @@ function render(d, fillForms = false) {
     $('history-body').append(row);
   }
   $('updated-at').textContent = `Atualizado em ${fmt(d.now)}`;
-  if(window.location?.hash==='#server') refreshServer();
+  if(['','#server','#overview','#maintenance'].includes(window.location?.hash||'')) refreshServer();
 }
 async function refresh(fillForms = false) {
   clearTimeout(pollTimer);
@@ -175,7 +176,7 @@ $('test-confirm').onclick = () => action(async () => { sendingTest=true; $('test
 $('password-open').onclick = () => $('password-dialog').showModal();
 $('password-form').onsubmit = event => { event.preventDefault(); action(async () => { await api('password','POST',Object.fromEntries(new FormData(event.target))); event.target.reset(); $('password-dialog').close(); loggedIn(false); toast('Senha alterada. Entre novamente.'); }); };
 // Keep every form mounted: changing screens must not discard unsaved edits.
-const panelRoutes = ['overview', 'settings', 'whatsapp', 'pauses', 'history', 'server'];
+const panelRoutes = ['rota', 'settings', 'whatsapp', 'pauses', 'history', 'server', 'maintenance'];
 const bytes = n => {if(!Number.isFinite(n))return 'Indisponível';const unit=n>=1024**3?3:n>=1024**2?2:n>=1024?1:0;return (n/1024**unit).toLocaleString('pt-BR',{maximumFractionDigits:2})+' '+['B','KiB','MiB','GiB'][unit];};
 const percent = n => Number.isFinite(n) ? n.toLocaleString('pt-BR',{maximumFractionDigits:1}) + '%' : 'Indisponível';
 const duration = n => Number.isFinite(n) ? Math.floor(n/3600)+'h '+Math.floor(n%3600/60)+'min' : 'Indisponível';
@@ -209,6 +210,7 @@ async function refreshServer() {
     const s=await api('server');
     serverSnapshot=s;
     $('server-updated').textContent='Última coleta em '+fmt(s.timestamp);
+    $('maintenance-updated').textContent='Última coleta em '+fmt(s.timestamp);
     $('server-device-meta').textContent=s.system.platform+' / '+s.system.architecture;
     $('server-executor-state').textContent=s.executor.healthy?'Executor ativo':'Executor requer atenção';
     $('server-executor-state').classList.toggle('off',!s.executor.healthy);
@@ -245,25 +247,30 @@ async function refreshServer() {
     $('server-alerts').replaceChildren();
     for(const alert of s.alerts) {const p=document.createElement('p');p.className='notice';p.textContent=alert.text;$('server-alerts').append(p);}
     serverHistoryRows(s);
-  } catch(error) {$('server-updated').textContent='Sem consulta atual. Os dados abaixo podem estar desatualizados.';$('server-executor-state').textContent='Sem consulta atual';$('server-executor-state').classList.toggle('off',true);toast(error.message,true);}
-  finally {serverBusy=false;$('server-refresh').disabled=false;if(csrf && window.location?.hash==='#server')serverTimer=setTimeout(()=>refreshServer(),60000);}
+  } catch(error) {$('server-updated').textContent='Sem consulta atual. Os dados abaixo podem estar desatualizados.';$('maintenance-updated').textContent='Sem consulta atual. Os dados abaixo podem estar desatualizados.';$('server-executor-state').textContent='Sem consulta atual';$('server-executor-state').classList.toggle('off',true);}
+  finally {serverBusy=false;$('server-refresh').disabled=false;if(csrf && ['','#server','#overview','#maintenance'].includes(window.location?.hash||''))serverTimer=setTimeout(()=>refreshServer(),60000);}
 }
 $('server-refresh').onclick=()=>refreshServer();
+$('maintenance-refresh').onclick=()=>refreshServer();
 $('server-range').onchange=()=>{if(serverSnapshot)serverHistoryRows(serverSnapshot);};
 function navigatePanel() {
-  const requested = (window.location?.hash || '#overview').slice(1);
-  const route = panelRoutes.includes(requested) ? requested : 'overview';
+  const requested = (window.location?.hash || '#server').slice(1);
+  const route = panelRoutes.includes(requested) ? requested : 'server';
+  const moduleRoutes=['rota','settings','whatsapp','pauses'];
+  const primary=moduleRoutes.includes(route)?'rota':route;
   for (const id of panelRoutes) $(id).hidden = id !== route;
   document.querySelectorAll('.nav-link').forEach(link => {
-    const active = link.getAttribute('href') === '#' + route;
+    const active = link.getAttribute('href') === '#' + primary;
     link.classList.toggle('active', active);
     if (active) link.setAttribute('aria-current', 'page');
     else link.removeAttribute('aria-current');
   });
-  const current = document.querySelectorAll('.nav-link.active')[0];
-  if ($('page-title')) $('page-title').textContent = current?.textContent || 'Visão geral';
+  $('rota-nav').hidden=!moduleRoutes.includes(route);
+  document.querySelectorAll('.module-link').forEach(link=>{const active=link.getAttribute('href')==='#'+route;link.classList.toggle('active',active);if(active)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');});
+  const titles={server:'Visão geral',rota:'Automações / Rota',settings:'Rota / Agenda e mensagem',whatsapp:'Rota / Conta e grupos',pauses:'Rota / Pausas',history:'Atividade',maintenance:'Manutenção'};
+  if ($('page-title')) $('page-title').textContent = titles[route];
   clearTimeout(serverTimer);
-  if(route==='server' && csrf) refreshServer();
+  if(['server','maintenance'].includes(route) && csrf) refreshServer();
 }
 window.addEventListener('hashchange', navigatePanel);
 navigatePanel();
