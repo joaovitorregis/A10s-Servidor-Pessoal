@@ -2,18 +2,18 @@
 name: A10s
 description: Servidor pessoal Android com a automação Rota como módulo.
 colors:
-  ink: "#242632"
-  blue: "#7046cd"
-  yellow: "#946216"
-  fog: "#f6f7f9"
-  paper: "#ffffff"
-  muted: "#656b78"
-  line: "#e3e5eb"
-  success: "#17795c"
-  surface-raised: "#ffffff"
-  surface-blue: "#eff4fb"
-  surface-violet: "#f3effb"
-  surface-green: "#edf7f2"
+  ink: "#f0f2f5"
+  blue: "#84b9ff"
+  yellow: "#e9c46a"
+  fog: "#101317"
+  paper: "#191d23"
+  muted: "#b4bdce"
+  line: "#343b47"
+  success: "#91d7b9"
+  surface-raised: "#212936"
+  surface-blue: "#1b2b3e"
+  surface-violet: "#29243b"
+  surface-green: "#1b302c"
 typography:
   body:
     fontFamily: '"Segoe UI", Arial, sans-serif'
@@ -69,13 +69,13 @@ components:
 
 ## Overview
 
-Servidor pessoal Android com a automação Rota como módulo. A entrada mostra recursos do aparelho e serviços; controles de envio pertencem à Rota. A referência visual fornecida é o CRM Pivora: superfícies claras, bordas suaves, navegação discreta e densidade de leitura. A10s conserva nomes, dados e ações próprios; não incorpora funcionalidades comerciais do CRM.
+Servidor pessoal Android com a automação Rota como módulo. A entrada mostra recursos do aparelho e serviços; controles de envio pertencem à Rota. A interface usa superfícies escuras, navegação persistente e uma área ampla de trabalho.
 
 ## Colors
 
-Indicadores de recursos usam superfícies brancas sobre o fundo cinza claro; séries mantêm armazenamento azul, memória violeta e bateria verde. Cores de série identificam medições, não classificam sua saúde.
+Recursos e gráficos usam superfícies tonais por série: armazenamento azul, memória violeta e bateria verde. A superfície de recursos tem contraste maior que o fundo; Rota usa azul para identificar o módulo acionável. Cores de série identificam medições, não classificam sua saúde.
 
-Violeta identifica ações e foco; o token blue mantém seu nome técnico para compatibilidade. Âmbar sinaliza atenção e verde sinaliza confirmação. Fundo, superfícies, texto principal, texto secundário e bordas usam os tokens do frontmatter. Memória usa violeta, armazenamento azul e bateria verde, com nomes explícitos além da cor.
+Azul identifica ações e foco; amarelo sinaliza atenção e verde sinaliza confirmação. Fundo, superfícies, texto principal, texto secundário e bordas usam os tokens do frontmatter. Memória usa violeta, armazenamento azul e bateria verde, com nomes explícitos além da cor.
 
 ## Typography
 
@@ -105,9 +105,9 @@ Nos gráficos, o valor em destaque acompanha a amostra selecionada, com horário
 
 A atualização das métricas exibe “Atualizando…” e aria-busy durante a consulta, restaurando o controle ao terminar. Falha mantém o aviso de dados desatualizados; não há confirmação visual inventada. Gráficos exibem guia vertical e horário/valor da leitura selecionada por ponteiro ou teclado. Foco destaca o gráfico em uso. Abrir Rota tem tratamento de ação primária e feedback de hover e pressão, sem movimento contínuo.
 
-Botões primários usam violeta com texto branco, altura mínima de 44px e preenchimento de 11px por 16px. Hover escurece o violeta; controles desabilitados reduzem a opacidade para 0.55. Campos usam fundo branco, borda visível e altura mínima de 44px. O foco visível usa contorno de 3px com afastamento de 4px; na barra lateral, o contorno é âmbar.
+Botões primários usam azul com texto escuro, altura mínima de 44px e preenchimento de 11px por 16px. Hover clareia o azul; controles desabilitados reduzem a opacidade para 0.55. Campos usam fundo escuro, borda visível e altura mínima de 44px. O foco visível usa contorno de 3px com afastamento de 4px; na barra lateral, o contorno é amarelo.
 
-Navegação ativa usa superfície lavanda e texto violeta escuro; a navegação da Rota fica dentro do módulo. Indicadores de estado combinam texto com cor. Cartões agrupam recursos, serviços e controles sem equiparar estado do executor a entrega.
+Navegação ativa usa superfície azul escura, borda e texto claro; a navegação da Rota fica dentro do módulo. Indicadores de estado combinam texto com cor. Cartões agrupam recursos, serviços e controles sem equiparar estado do executor a entrega.
 
 Visão geral concentra recursos e saúde do executor. Automações contém Rota, agenda, conta e pausas. Atividade apresenta envios registrados. Manutenção apresenta backups e logs.
 Acessos incorpora o serviço de arquivos existente na porta 3923, com login próprio. Por decisão do usuário, o controle do celular é entregue como Controlar_A10s.bat em arquivos/Download para execução manual no notebook, sem links de protocolo. A consulta de conectividade é autenticada; a incorporação permite apenas o serviço de arquivos no mesmo host. Não há senha no HTML, execução de comandos pelo servidor nem promessa de acesso às pastas protegidas do Android.
