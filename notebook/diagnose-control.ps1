@@ -13,6 +13,8 @@ foreach($controlPropertyTask in @('AdbPath','ScrcpyPath')) {
 }
 $controlRegisteredTask=(Get-Item -LiteralPath 'HKCU:\Software\Classes\a10s-control\shell\open\command').GetValue('')
 $controlDiagnosticsTask += [pscustomobject]@{check='ProtocolHandler';ok=($controlRegisteredTask.Contains((Join-Path $PSScriptRoot 'open-control.ps1')))}
+$controlApplicationTask=(Get-ItemProperty -LiteralPath 'HKCU:\Software\RegisteredApplications' -ErrorAction SilentlyContinue).'A10s - Controle remoto'
+$controlDiagnosticsTask += [pscustomobject]@{check='RegisteredApplication';ok=($controlApplicationTask -eq 'Software\A10sControl\Capabilities')}
 if(-not ('A10sAssociationQuery' -as [type])) {
   Add-Type -TypeDefinition @'
 using System;

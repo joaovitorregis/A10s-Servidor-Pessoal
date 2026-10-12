@@ -17,6 +17,19 @@ $controlPowerShellTask=Join-Path ([Environment]::GetFolderPath('System')) 'Windo
 if(-not (Test-Path -LiteralPath $controlPowerShellTask -PathType Leaf)) { throw 'Windows PowerShell nao localizado.' }
 $controlCommandTask='"'+$controlPowerShellTask+'" -NoProfile -ExecutionPolicy Bypass -File "'+$controlScriptTask+'" -Action "%1"'
 Set-Item -LiteralPath ($controlProtocolTask+'\shell\open\command') -Value $controlCommandTask
+$controlProgIdTask='HKCU:\Software\Classes\A10sControl.Url'
+New-Item -Path ($controlProgIdTask+'\shell\open\command') -Force | Out-Null
+Set-Item -LiteralPath $controlProgIdTask -Value 'A10s - Controle remoto'
+New-ItemProperty -LiteralPath $controlProgIdTask -Name 'URL Protocol' -Value '' -PropertyType String -Force | Out-Null
+Set-Item -LiteralPath ($controlProgIdTask+'\shell\open\command') -Value $controlCommandTask
+$controlCapabilitiesTask='HKCU:\Software\A10sControl\Capabilities'
+New-Item -Path ($controlCapabilitiesTask+'\URLAssociations') -Force | Out-Null
+New-ItemProperty -LiteralPath $controlCapabilitiesTask -Name 'ApplicationName' -Value 'A10s - Controle remoto' -PropertyType String -Force | Out-Null
+New-ItemProperty -LiteralPath $controlCapabilitiesTask -Name 'ApplicationDescription' -Value 'Abre somente o A10s pareado no scrcpy deste notebook.' -PropertyType String -Force | Out-Null
+New-ItemProperty -LiteralPath ($controlCapabilitiesTask+'\URLAssociations') -Name 'a10s-control' -Value 'A10sControl.Url' -PropertyType String -Force | Out-Null
+New-Item -Path 'HKCU:\Software\RegisteredApplications' -Force | Out-Null
+New-ItemProperty -LiteralPath 'HKCU:\Software\RegisteredApplications' -Name 'A10s - Controle remoto' -Value 'Software\A10sControl\Capabilities' -PropertyType String -Force | Out-Null
+# Do not write UserChoice or its protected hash. The user chooses the default in Windows Settings.
 if(-not ('A10sAssociationNotification' -as [type])) {
   Add-Type -TypeDefinition @'
 using System;

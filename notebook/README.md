@@ -14,6 +14,8 @@ O instalador registra o protocolo apenas para o usuário atual, em `HKCU\Softwar
 
 O navegador pode pedir autorização para abrir o aplicativo. Fora da rede local, é necessário que o transporte ADB autenticado esteja conectado pelo endereço privado. Após reinício do Android, a porta da depuração pode mudar; reconecte pelo novo endereço. Na mesma rede, o handler procura o dispositivo pareado pelo mDNS.
 
+Se o navegador disser que não existe aplicativo associado, abra **Configurações do Windows > Aplicativos > Aplicativos padrão**, procure o tipo de link `a10s-control` e selecione **A10s - Controle remoto**. O instalador cadastra apenas esse protocolo com um ProgID próprio e `RegisteredApplications`; não altera outros tipos de links e não modifica a escolha protegida do usuário (`UserChoice`).
+
 O instalador salva os caminhos completos do ADB, scrcpy e Windows PowerShell. Após atualizar ou mover o scrcpy, execute novamente o instalador. Falhas do lançador são exibidas e registradas em `%LOCALAPPDATA%\A10sControl\control.log`. Para conferir sintaxe, executáveis e registro sem abrir o controle, execute `./diagnose-control.ps1`.
 Depois de registrar o protocolo, o instalador notifica o Windows com `SHChangeNotify(SHCNE_ASSOCCHANGED)`. Isso atualiza o cache de associações sem abrir aplicativos ou remover confirmações do navegador. Se o navegador não reconhecer uma associação recém-instalada, feche e abra o navegador manualmente, preservando suas abas.
 O diagnóstico também consulta `AssocQueryStringW` com `ASSOCF_IS_PROTOCOL` para conferir a resolução do comando, executável e nome do aplicativo pelo Windows, sem executá-los. Se essas consultas funcionarem, mas o navegador disser que não existe um handler, encerre o navegador pelo menu Sair: apenas fechar uma janela pode deixar processos antigos ativos. Limpe as mensagens antigas do Console antes de repetir o teste.
@@ -21,6 +23,7 @@ O diagnóstico também consulta `AssocQueryStringW` com `ASSOCF_IS_PROTOCOL` par
 ## Remoção
 
 Remova somente a chave `HKCU\Software\Classes\a10s-control` no Editor do Registro. Isso remove o botão como lançador no Windows, sem alterar o pareamento ADB ou a automação do celular.
+Para remover também o cadastro na lista de aplicativos padrão, remova a entrada **A10s - Controle remoto** de `HKCU\Software\RegisteredApplications` e as chaves próprias `HKCU\Software\A10sControl` e `HKCU\Software\Classes\A10sControl.Url`. Preserve todas as outras entradas.
 
 ## Arquivos
 
