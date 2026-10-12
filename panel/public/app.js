@@ -189,7 +189,6 @@ async function refreshAccess() {
     $('files-open').disabled=!s.files.reachable;
     $('files-external').hidden=!s.files.reachable;$('files-external').href=filesUrl;
     $('remote-status').textContent='Arquivo BAT';
-    $('remote-detail').textContent='Em Arquivos, abra arquivos → Download e baixe Controlar_A10s.bat. Execute no notebook com o A10s pareado.';
   }catch(error){$('files-status').textContent='Sem consulta atual';$('remote-status').textContent='Sem consulta atual';$('files-open').disabled=true;$('files-external').hidden=true;}
   finally {$('access-refresh').disabled=false;}
 }
