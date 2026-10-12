@@ -33,3 +33,15 @@ test('collector coalesces requests, preserves private state and persists bounded
   assert.equal(fs.readFileSync(path.join(root,'config.json'),'utf8'),'PRIVATE_CONFIG');
   assert.equal(JSON.parse(fs.readFileSync(path.join(root,'runtime/server-metrics.json'),'utf8')).samples.length,1);
 });
+test('collector recognizes complete manifests larger than one MiB and preserves old uncertain dates',async t=>{
+  const root=fs.mkdtempSync(path.join(os.tmpdir(),'rota-manifest-'));fs.mkdirSync(path.join(root,'runtime'));fs.mkdirSync(path.join(root,'backups','snapshot'),{recursive:true});
+  const createdAt='2026-10-03T13:04:26Z';
+  fs.writeFileSync(path.join(root,'backups','snapshot','snapshot-manifest.json'),JSON.stringify({version:1,createdAt,entries:[{path:'x'.repeat(1100000)}]}));
+  const state=JSON.stringify({version:1,deliveries:{'2026-09-20|grupo|manual':{status:'attempting'},'2026-09-22|grupo|manual':{status:'uncertain'}}});
+  fs.writeFileSync(path.join(root,'runtime/state.json'),state);
+  const telemetry=createTelemetry(root,{clock:()=>Date.parse('2026-10-12T00:00:00Z'),command:async()=>({stdout:'down: fixture: 1s'})});
+  t.after(()=>{telemetry.close();fs.rmSync(root,{recursive:true,force:true});});
+  const s=await telemetry.get();assert.equal(s.backup.available,true);assert.equal(s.backup.files,1);assert.equal(s.backup.verified,false);
+  assert.deepEqual(s.delivery.uncertainDates,['2026-09-20','2026-09-22']);assert.match(s.alerts.find(a=>a.code==='uncertain').text,/20\/09\/2026, 22\/09\/2026/);
+  assert.equal(fs.readFileSync(path.join(root,'runtime/state.json'),'utf8'),state);
+});

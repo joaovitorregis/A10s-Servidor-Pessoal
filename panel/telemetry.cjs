@@ -37,7 +37,7 @@ function alertsFor(s) {
   if(!s.executor.healthy) add('executor','critical','Executor sem sinal de vida saudável.');
   if(!s.backup.available) add('backup','warning','Nenhum snapshot com manifesto encontrado nos diretórios monitorados.');
   else if(s.backup.ageHours>168) add('backup_age','warning','O último snapshot tem mais de sete dias.');
-  if(s.delivery.uncertainCount) add('uncertain','warning',s.delivery.uncertainCount+' tentativa(s) sem confirmação no histórico. Confira a conversa antes de repetir.');
+  if(s.delivery.uncertainCount) add('uncertain','warning',s.delivery.uncertainCount+' tentativa(s) sem confirmação'+(s.delivery.uncertainDates?.length?' ('+s.delivery.uncertainDates.map(date=>date.slice(8,10)+'/'+date.slice(5,7)+'/'+date.slice(0,4)).join(', ')+')':' no histórico')+'. Consulte Atividade; não repita sem conferir a conversa.');
   return alerts;
 }
 function createTelemetry(root,{clock=Date.now,command=exec}={}) {
@@ -65,7 +65,11 @@ function createTelemetry(root,{clock=Date.now,command=exec}={}) {
       for(const entry of entries.slice(0,200)) {
         if(!entry.isDirectory() || entry.name.startsWith('restored')) continue;
         try {
-          const manifest=JSON.parse(await read(path.join(dir,entry.name,'snapshot-manifest.json'),1024*1024));
+          const file=path.join(dir,entry.name,'snapshot-manifest.json');
+          // Complete bounded reads: truncated JSON is not evidence of an absent backup.
+          const size=(await fs.stat(file)).size;
+          if(size>8*1024*1024) continue;
+          const manifest=JSON.parse(await read(file,Math.max(1,size+1)));
           const timestamp=Date.parse(manifest.createdAt);
           if(manifest.version===1 && Array.isArray(manifest.entries) && Number.isFinite(timestamp) && timestamp<=clock() && (!latest || timestamp>latest.time)) latest={time:timestamp,name:entry.name,files:manifest.entries.length};
         }catch{}
@@ -104,7 +108,9 @@ function createTelemetry(root,{clock=Date.now,command=exec}={}) {
     const pid=await read(path.join(root,'runtime/scheduler.lock'),32).then(Number).catch(()=>null);
     let running=false;try {if(Number.isInteger(pid)&&pid>1){process.kill(pid,0);running=true;}}catch{}
     const executor={healthy:executorHealthy({schedulerRunning:running,pid,heartbeat,supervisionStatus:executorService.available?0:1,supervisionPid:executorService.pid,now}),heartbeatAgeSeconds:Number.isFinite(age)&&age>=0?Math.round(age):null};
-    const delivery={lastConfirmedAt:confirmed?.confirmedAt||null,uncertainCount:records.filter(r=>r && ['attempting','uncertain'].includes(r.status)).length,stateReadable:state?.version===1 && !!state?.deliveries && typeof state.deliveries==='object' && !Array.isArray(state.deliveries)};
+    const uncertain=Object.entries(state?.deliveries||{}).filter(([,r])=>r && ['attempting','uncertain'].includes(r.status));
+    const uncertainDates=[...new Set(uncertain.map(([key,r])=>String(r.timestamp||key).slice(0,10)).filter(date=>/^\d{4}-\d{2}-\d{2}$/.test(date)))].sort();
+    const delivery={lastConfirmedAt:confirmed?.confirmedAt||null,uncertainCount:uncertain.length,uncertainDates,stateReadable:state?.version===1 && !!state?.deliveries && typeof state.deliveries==='object' && !Array.isArray(state.deliveries)};
     if(!backupSizeAt || now-backupSizeAt>=300000) {
       backupSize=await probe(async()=>{const {stdout}=await command('du',['-sk',path.join(root,'backups')],{timeout:4000,maxBuffer:4096});const size=Number(stdout.match(/^(\d+)\s/)?.[1])*1024;return Number.isFinite(size)?value({bytes:size}):missing('Tamanho não informado.');});backupSizeAt=now;
     }
