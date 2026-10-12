@@ -15,6 +15,7 @@ O instalador registra o protocolo apenas para o usuário atual, em `HKCU\Softwar
 O navegador pode pedir autorização para abrir o aplicativo. Fora da rede local, é necessário que o transporte ADB autenticado esteja conectado pelo endereço privado. Após reinício do Android, a porta da depuração pode mudar; reconecte pelo novo endereço. Na mesma rede, o handler procura o dispositivo pareado pelo mDNS.
 
 O instalador salva os caminhos completos do ADB, scrcpy e Windows PowerShell. Após atualizar ou mover o scrcpy, execute novamente o instalador. Falhas do lançador são exibidas e registradas em `%LOCALAPPDATA%\A10sControl\control.log`. Para conferir sintaxe, executáveis e registro sem abrir o controle, execute `./diagnose-control.ps1`.
+Depois de registrar o protocolo, o instalador notifica o Windows com `SHChangeNotify(SHCNE_ASSOCCHANGED)`. Isso atualiza o cache de associações sem abrir aplicativos ou remover confirmações do navegador. Se o navegador não reconhecer uma associação recém-instalada, feche e abra o navegador manualmente, preservando suas abas.
 
 ## Remoção
 

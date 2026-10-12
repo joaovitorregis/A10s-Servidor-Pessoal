@@ -17,4 +17,16 @@ $controlPowerShellTask=Join-Path ([Environment]::GetFolderPath('System')) 'Windo
 if(-not (Test-Path -LiteralPath $controlPowerShellTask -PathType Leaf)) { throw 'Windows PowerShell nao localizado.' }
 $controlCommandTask='"'+$controlPowerShellTask+'" -NoProfile -ExecutionPolicy Bypass -File "'+$controlScriptTask+'" -Action "%1"'
 Set-Item -LiteralPath ($controlProtocolTask+'\shell\open\command') -Value $controlCommandTask
+if(-not ('A10sAssociationNotification' -as [type])) {
+  Add-Type -TypeDefinition @'
+using System;
+using System.Runtime.InteropServices;
+public static class A10sAssociationNotification {
+  [DllImport("shell32.dll")]
+  public static extern void SHChangeNotify(uint eventId, uint flags, IntPtr item1, IntPtr item2);
+}
+'@
+}
+# Refresh the Shell's association cache, without launching any application.
+[A10sAssociationNotification]::SHChangeNotify(0x08000000,0x1003,[IntPtr]::Zero,[IntPtr]::Zero)
 Write-Host 'Controle A10s registrado para este usuário. O navegador pedirá para abrir o aplicativo.'
