@@ -197,11 +197,43 @@ function serverHistoryRows(s) {
   const hours=Number($('server-range').value)||1;
   const end=Date.parse(s.timestamp), cutoff=end-hours*3600000;
   const samples=s.history.filter(x=>Date.parse(x.timestamp)>=cutoff && Date.parse(x.timestamp)<=end);
+  renderResourceCharts(samples,cutoff,end);
   // Select evenly spaced real samples; do not interpolate across collection gaps.
   const rows=samples.length<=60?samples:Array.from({length:60},(_,i)=>samples[Math.round(i*(samples.length-1)/59)]);
   $('server-history').replaceChildren();
   for(const sample of [...rows].reverse()) {const tr=document.createElement('tr');for(const text of [fmt(sample.timestamp),percent(sample.memoryPercent),bytes(sample.freeBytes),percent(sample.cpuPercent),percent(sample.batteryPercent)]){const td=document.createElement('td');td.textContent=text;tr.append(td);}$('server-history').append(tr);}
   $('server-history-caption').textContent=samples.length?rows.length+' de '+samples.length+' amostras no período. Coleta a cada minuto.':'Nenhuma amostra neste período.';
+}
+// Use elapsed time, not sample indexes. Missing readings and collection gaps break the line.
+function resourceChartModel(samples,key,start,end) {
+  const points=samples.filter(p=>Number.isFinite(Date.parse(p.timestamp)) && Date.parse(p.timestamp)>=start && Date.parse(p.timestamp)<=end).sort((a,b)=>Date.parse(a.timestamp)-Date.parse(b.timestamp));
+  const valid=points.filter(p=>Number.isFinite(p[key]) && p[key]>=0 && (key==='freeBytes'||p[key]<=100));
+  const values=valid.map(p=>key==='freeBytes'?p[key]/1024**3:p[key]);
+  const min=key==='freeBytes'?Math.max(0,Math.floor(Math.min(...values)*10)/10-.1):0;
+  const max=key==='freeBytes'?Math.max(min+.2,Math.ceil(Math.max(...values)*10)/10+.1):100;
+  const segments=[];let segment=[],previous=null;
+  for(const p of points) {
+    const time=Date.parse(p.timestamp),value=key==='freeBytes'?p[key]/1024**3:p[key];
+    if(!Number.isFinite(p[key])||p[key]<0||(key!=='freeBytes'&&p[key]>100)) {if(segment.length)segments.push(segment);segment=[];previous=null;continue;}
+    if(previous!==null&&time-previous>150000) {if(segment.length)segments.push(segment);segment=[];}
+    segment.push({x:36+((time-start)/Math.max(1,end-start))*284,y:90-(value-min)/(max-min)*72,value,time});previous=time;
+  }
+  if(segment.length)segments.push(segment);
+  return {segments,min:valid.length?min:0,max:valid.length?max:100,count:valid.length,last:valid.at(-1)||null};
+}
+function renderResourceCharts(samples,start,end) {
+  const container=$('server-charts');container.replaceChildren();
+  const svgNode=(tag,attrs,text)=>{const node=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const [key,value] of Object.entries(attrs))node.setAttribute(key,String(value));if(text!==undefined)node.textContent=text;return node;};
+  for(const [key,label,color] of [['memoryPercent','Memória usada','#b7a7eb'],['freeBytes','Espaço livre','#86b8e1'],['batteryPercent','Bateria','#8dceb1']]) {
+    const model=resourceChartModel(samples,key,start,end),figure=document.createElement('figure'),heading=document.createElement('figcaption'),title=document.createElement('span'),value=document.createElement('strong');
+    figure.className='resource-chart';title.textContent=label;value.textContent=model.last?(key==='freeBytes'?bytes(model.last[key]):percent(model.last[key])):'Sem leitura';heading.append(title,value);figure.append(heading);
+    const plot=svgNode('svg',{viewBox:'0 0 328 112',role:'img','aria-label':label+': '+model.count+' leituras; linhas interrompidas indicam lacunas.'});
+    for(const [y,n] of [[18,model.max],[90,model.min]]) {plot.append(svgNode('line',{x1:36,x2:320,y1:y,y2:y,class:'chart-gridline'}),svgNode('text',{x:29,y:y+4,'text-anchor':'end',class:'chart-axis'},n.toLocaleString('pt-BR',{maximumFractionDigits:1})));}
+    for(const segment of model.segments) {plot.append(svgNode('polyline',{points:segment.map(p=>p.x.toFixed(2)+','+p.y.toFixed(2)).join(' '),fill:'none',stroke:color,'stroke-width':2,'stroke-linejoin':'round'}));if(segment.length===1)plot.append(svgNode('circle',{cx:segment[0].x,cy:segment[0].y,r:2.5,fill:color}));}
+    const time=n=>new Date(n).toLocaleTimeString('pt-BR',{timeZone:'America/Fortaleza',hour:'2-digit',minute:'2-digit'});
+    plot.append(svgNode('text',{x:36,y:109,class:'chart-axis'},time(start)),svgNode('text',{x:320,y:109,'text-anchor':'end',class:'chart-axis'},time(end)));
+    figure.append(plot);const note=document.createElement('small');note.textContent=model.count?model.count+' leituras'+(model.segments.length>1?' · com lacunas':'')+(end-Date.parse(model.last.timestamp)>150000?' · última em '+time(Date.parse(model.last.timestamp)):''):'Nenhuma leitura neste período';figure.append(note);container.append(figure);
+  }
 }
 async function refreshServer() {
   if(serverBusy || !csrf) return;
@@ -234,8 +266,7 @@ async function refreshServer() {
       ['Sinal de vida',s.executor.heartbeatAgeSeconds!==null?s.executor.heartbeatAgeSeconds+'s atrás':'Indisponível'],
       ['Reinícios observados (24h)',s.restarts.executor+' do executor / '+s.restarts.panel+' do painel'],
       ['Último envio confirmado',s.delivery.lastConfirmedAt?fmt(s.delivery.lastConfirmedAt):'Nenhuma confirmação disponível'],
-      ['Tentativas incertas',String(s.delivery.uncertainCount)],
-      ['Entrega','Processo ativo não comprova entrega. A confirmação está no histórico de envios.']
+      ['Tentativas incertas',String(s.delivery.uncertainCount)]
     ]);
     resourceRows('server-files',[
       ['Último snapshot',s.backup.available?s.backup.name+' · '+fmt(s.backup.timestamp):'Nenhum snapshot localizado'],

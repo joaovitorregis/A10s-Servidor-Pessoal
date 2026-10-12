@@ -195,7 +195,7 @@ async function uiFixture() {
   const weekdays=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(value=>({...node(),value}));
   const state={config:JSON.parse(JSON.stringify(base)),offline:false};
   const data=()=>({config:JSON.parse(JSON.stringify(state.config)),revision:model.revision(state.config),health:{healthy:true,heartbeatAgeSeconds:1},history:[],preview:'fixture',nextRun:null,now:new Date().toISOString()});
-  const context={document:{getElementById:el,createElement:node,createTextNode:text=>({textContent:text}),querySelectorAll:selector=>selector==='.day-picker input'?weekdays:selector==='.day-picker input:checked'?weekdays.filter(x=>x.checked):selector.startsWith('#app-view button')?['toggle-enabled','wa-check','wa-pair','wa-disable','wa-production','wa-test','wa-save-production','wa-save-test','test-open'].map(el):[]},window:{location:{hash:"#rota"},addEventListener(){},confirm:()=>true},Intl,Date,TypeError,FormData:class{},setTimeout:()=>0,clearTimeout(){},console,
+  const context={document:{getElementById:el,createElement:node,createElementNS:node,createTextNode:text=>({textContent:text}),querySelectorAll:selector=>selector==='.day-picker input'?weekdays:selector==='.day-picker input:checked'?weekdays.filter(x=>x.checked):selector.startsWith('#app-view button')?['toggle-enabled','wa-check','wa-pair','wa-disable','wa-production','wa-test','wa-save-production','wa-save-test','test-open'].map(el):[]},window:{location:{hash:"#rota"},addEventListener(){},confirm:()=>true},Intl,Date,TypeError,FormData:class{},setTimeout:()=>0,clearTimeout(){},console,
     fetch:async(url,options)=>{
       if(state.networkFailure) throw new TypeError('Failed to fetch');
       if(state.offline)throw Error('fixture offline');
@@ -258,6 +258,21 @@ test('server history range selects real samples and bounds displayed rows',async
   f.context.serverFixtureData.history=[];vm.runInContext('serverHistoryRows(serverFixtureData)',f.context);
   assert.equal(f.el('server-history').children.length,0);
   assert.match(f.el('server-history-caption').textContent,/Nenhuma amostra/);
+});
+
+test('resource charts preserve zero values and break missing readings and elapsed gaps',async()=>{
+  const f=await uiFixture(),start=Date.parse('2026-10-12T03:00:00Z');
+  f.context.chartStart=start;f.context.chartEnd=start+3600000;
+  f.context.chartSamples=[0,1,2,3,8,9].map((minute,i)=>({timestamp:new Date(start+minute*60000).toISOString(),batteryPercent:i===2?null:i===5?101:0,freeBytes:0}));
+  const m=vm.runInContext("resourceChartModel(chartSamples,'batteryPercent',chartStart,chartEnd)",f.context);
+  assert.equal(m.count,4);assert.equal(m.segments.length,3);assert.equal(m.last.batteryPercent,0);
+  assert.ok(Math.abs(m.segments[0][1].x-m.segments[0][0].x-284/60)<1e-9);
+  const disk=vm.runInContext("resourceChartModel(chartSamples,'freeBytes',chartStart,chartEnd)",f.context);
+  assert.equal(disk.count,6);assert.ok(disk.max>disk.min);
+  for(const segment of disk.segments)for(const point of segment)assert.ok(Number.isFinite(point.x)&&Number.isFinite(point.y));
+  f.context.chartSamples=[];
+  const empty=vm.runInContext("resourceChartModel(chartSamples,'freeBytes',chartStart,chartEnd)",f.context);
+  assert.equal(empty.count,0);assert.equal(empty.segments.length,0);assert.equal(empty.last,null);
 });
 
 test('schedule edits never overwrite group destinations or their IDs',async()=>{
