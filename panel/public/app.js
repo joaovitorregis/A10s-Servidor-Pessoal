@@ -342,7 +342,11 @@ function navigatePanel() {
   document.querySelectorAll('.module-link').forEach(link=>{const active=link.getAttribute('href')==='#'+route;link.classList.toggle('active',active);if(active)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');});
   const titles={server:'Visão geral',rota:'Automações / Rota',settings:'Rota / Agenda e mensagem',whatsapp:'Rota / Conta e grupos',pauses:'Rota / Pausas',history:'Atividade',maintenance:'Manutenção'};
   titles.access='Acessos';
-  if ($('page-title')) $('page-title').textContent = titles[route];
+  if ($('page-title')) {
+    $('page-title').textContent = titles[route];
+    $('page-title').setAttribute('role', 'heading');
+    $('page-title').setAttribute('aria-level', '1');
+  }
   clearTimeout(serverTimer);
   if(['server','maintenance'].includes(route) && csrf) refreshServer();
   if(route==='access' && csrf) refreshAccess();
