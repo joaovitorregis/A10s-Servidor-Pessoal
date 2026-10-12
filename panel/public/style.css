@@ -322,7 +322,7 @@ body .server-technical { padding-block: 14px; margin-bottom: 14px; font-size: 13
 #server-battery-meter::-webkit-progress-value { background: #8dceb1; }
 #server-battery-meter::-moz-progress-bar { background: #8dceb1; }
 .notification-dock { position: relative; width: min(100%,820px); margin: 0 auto 12px; padding: 0 24px; display: flex; justify-content: flex-end; }
-.notification-button { display: inline-flex; gap: 8px; align-items: center; justify-content: center; min-height: 40px; min-width: 60px; background: #202c40; color: #bcd5ff; border: 1px solid #425978; border-radius: 8px; }
+.notification-button { display: inline-flex; gap: 8px; align-items: center; justify-content: center; min-height: 44px; min-width: 60px; background: #202c40; color: #bcd5ff; border: 1px solid #425978; border-radius: 8px; }
 .notification-button:hover { background: #2a3d59; }
 #notifications-count { font-size: 12px; font-weight: 650; }
 .notification-panel { position: absolute; right: 24px; top: 48px; z-index: 20; width: min(420px,calc(100vw - 48px)); max-height: 65vh; overflow-y: auto; background: #202731; border: 1px solid #59677a; border-radius: 12px; padding: 18px; box-shadow: 0 12px 32px #0005; }
@@ -336,9 +336,9 @@ body .server-technical { padding-block: 14px; margin-bottom: 14px; font-size: 13
 .remote-access { margin-top: 16px; }
 #access h1 { font-size: 22px; }
 .history-samples { border-top: 1px solid var(--line); margin-top: 20px; padding-top: 14px; }
-.history-samples summary { cursor: pointer; font-size: 13px; min-height: 28px; }
-body .server-range-label select { min-height: 36px; font-size: 12px; }
-body .server-title button { min-height: 36px; font-size: 12px; padding: 7px 12px; }
+.history-samples summary { cursor: pointer; font-size: 13px; min-height: 44px; padding-block: 12px; }
+body .server-range-label select { min-height: 44px; font-size: 13px; }
+body .server-title button { min-height: 44px; font-size: 13px; padding: 7px 12px; }
 ::selection { background: #395478; color: #fff; }
 input, textarea { caret-color: var(--blue); }
 * { scrollbar-color: #48515e var(--fog); scrollbar-width: thin; }
@@ -351,7 +351,7 @@ input, textarea { caret-color: var(--blue); }
   body .server-vitals > div + div { padding: 0; }
   body .server-vitals dt { font-size: 12px; }
   body .server-vitals strong { font-size: 14px; }
-  body .server-vitals small { font-size: 10px; }
+  body .server-vitals small { font-size: 12px; }
   .server-charts { grid-template-columns: 1fr; gap: 22px; }
   .resource-chart svg { max-height: 130px; }
   .resource-chart figcaption { flex-direction: row; justify-content: space-between; align-items: baseline; }
