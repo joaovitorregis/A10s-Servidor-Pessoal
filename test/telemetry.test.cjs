@@ -8,6 +8,7 @@ const {createTelemetry,memoryInfo,cpuTicks,alertsFor}=require('../panel/telemetr
 test('telemetry distinguishes unavailable memory and ignores guest CPU double counting',()=>{
   assert.equal(memoryInfo('MemTotal: 100 kB').available,false);
   assert.equal(memoryInfo('MemTotal: 100 kB\nMemAvailable: 25 kB').percent,75);
+  const exhausted=memoryInfo('MemTotal: 100 kB\nMemAvailable: 0 kB');assert.equal(exhausted.available,true);assert.equal(exhausted.free,0);assert.equal(exhausted.percent,100);
   assert.deepEqual(cpuTicks('cpu 10 20 30 40 5 6 7 8 9 10'),{total:126,idle:45});
   assert.equal(cpuTicks('cpu broken'),null);
 });

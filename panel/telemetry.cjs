@@ -19,7 +19,7 @@ async function read(file, max=65536) {
 function memoryInfo(text) {
   const get=name=>Number(text.match(new RegExp('^'+name+':\\s+(\\d+) kB','m'))?.[1])*1024;
   const total=get('MemTotal'), available=get('MemAvailable');
-  return total>0 && available>=0 && available<=total ? value({total,available,used:total-available,percent:100*(total-available)/total}) : missing('Memória disponível não informada pelo sistema.');
+  return total>0 && available>=0 && available<=total ? value({total,free:available,used:total-available,percent:100*(total-available)/total}) : missing('Memória disponível não informada pelo sistema.');
 }
 function cpuTicks(text) {
   const fields=text.match(/^cpu\s+(.+)$/m)?.[1].trim().split(/\s+/).map(Number);
