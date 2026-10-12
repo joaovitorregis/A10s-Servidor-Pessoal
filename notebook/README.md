@@ -16,6 +16,7 @@ O navegador pode pedir autorização para abrir o aplicativo. Fora da rede local
 
 O instalador salva os caminhos completos do ADB, scrcpy e Windows PowerShell. Após atualizar ou mover o scrcpy, execute novamente o instalador. Falhas do lançador são exibidas e registradas em `%LOCALAPPDATA%\A10sControl\control.log`. Para conferir sintaxe, executáveis e registro sem abrir o controle, execute `./diagnose-control.ps1`.
 Depois de registrar o protocolo, o instalador notifica o Windows com `SHChangeNotify(SHCNE_ASSOCCHANGED)`. Isso atualiza o cache de associações sem abrir aplicativos ou remover confirmações do navegador. Se o navegador não reconhecer uma associação recém-instalada, feche e abra o navegador manualmente, preservando suas abas.
+O diagnóstico também consulta `AssocQueryStringW` com `ASSOCF_IS_PROTOCOL` para conferir a resolução do comando, executável e nome do aplicativo pelo Windows, sem executá-los. Se essas consultas funcionarem, mas o navegador disser que não existe um handler, encerre o navegador pelo menu Sair: apenas fechar uma janela pode deixar processos antigos ativos. Limpe as mensagens antigas do Console antes de repetir o teste.
 
 ## Remoção
 
