@@ -10,6 +10,10 @@ colors:
   muted: "#b4bdce"
   line: "#343b47"
   success: "#91d7b9"
+  surface-raised: "#212936"
+  surface-blue: "#1b2b3e"
+  surface-violet: "#29243b"
+  surface-green: "#1b302c"
 typography:
   body:
     fontFamily: '"Segoe UI", Arial, sans-serif'
@@ -69,6 +73,8 @@ Servidor pessoal Android com a automação Rota como módulo. A entrada mostra r
 
 ## Colors
 
+Recursos e gráficos usam superfícies tonais por série: armazenamento azul, memória violeta e bateria verde. A superfície de recursos tem contraste maior que o fundo; Rota usa azul para identificar o módulo acionável. Cores de série identificam medições, não classificam sua saúde.
+
 Azul identifica ações e foco; amarelo sinaliza atenção e verde sinaliza confirmação. Fundo, superfícies, texto principal, texto secundário e bordas usam os tokens do frontmatter. Memória usa violeta, armazenamento azul e bateria verde, com nomes explícitos além da cor.
 
 ## Typography
@@ -92,6 +98,8 @@ Cartões e navegação usam contraste tonal e bordas, sem sombra de repouso. Som
 Cartões têm cantos de 16px; controles usam 7px, navegação 8px e indicadores de estado 20px. Bordas finas delimitam superfícies e campos. Medidores permanecem discretos, com altura de 6px no layout de recursos.
 
 ## Components
+
+A atualização das métricas exibe “Atualizando…” e aria-busy durante a consulta, restaurando o controle ao terminar. Falha mantém o aviso de dados desatualizados; não há confirmação visual inventada. Gráficos exibem guia vertical e horário/valor da leitura selecionada por ponteiro ou teclado. Foco destaca o gráfico em uso. Abrir Rota tem tratamento de ação primária e feedback de hover e pressão, sem movimento contínuo.
 
 Botões primários usam azul com texto escuro, altura mínima de 44px e preenchimento de 11px por 16px. Hover clareia o azul; controles desabilitados reduzem a opacidade para 0.55. Campos usam fundo escuro, borda visível e altura mínima de 44px. O foco visível usa contorno de 3px com afastamento de 4px; na barra lateral, o contorno é amarelo.
 

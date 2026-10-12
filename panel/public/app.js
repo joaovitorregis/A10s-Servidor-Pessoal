@@ -268,12 +268,12 @@ function renderResourceCharts(samples,start,end) {
     plot.append(svgNode('text',{x:36,y:109,class:'chart-axis'},time(start)),svgNode('text',{x:320,y:109,'text-anchor':'end',class:'chart-axis'},time(end)));
     figure.append(plot);const note=document.createElement('small');note.textContent=model.count?model.count+' leituras'+(model.segments.length>1?' · com lacunas':'')+(end-Date.parse(model.last.timestamp)>150000?' · última em '+time(Date.parse(model.last.timestamp)):''):'Nenhuma leitura neste período';figure.append(note);
     if(model.count) {
-      const points=model.segments.flat(),cursor=svgNode('circle',{r:4,fill:color,stroke:'#101317','stroke-width':2}),scrub=document.createElement('input');
+      const points=model.segments.flat(),cursor=svgNode('circle',{r:4,fill:color,stroke:'#101317','stroke-width':2}),guide=svgNode('line',{y1:18,y2:90,stroke:color,'stroke-width':1,'stroke-dasharray':'3 4',opacity:.65}),scrub=document.createElement('input');
       scrub.type='range';scrub.min='0';scrub.max=String(points.length-1);scrub.value=String(points.length-1);scrub.step='1';scrub.className='chart-scrubber';scrub.setAttribute('aria-label','Selecionar leitura de '+label);
-      const selectPoint=index=>{const p=points[index];cursor.setAttribute('cx',p.x);cursor.setAttribute('cy',p.y);note.textContent=time(p.time)+' · '+(key==='freeBytes'?bytes(p.value*1024**3):percent(p.value));scrub.setAttribute('aria-valuetext',note.textContent);};
+      const selectPoint=index=>{const p=points[index];cursor.setAttribute('cx',p.x);cursor.setAttribute('cy',p.y);guide.setAttribute('x1',p.x);guide.setAttribute('x2',p.x);note.textContent=time(p.time)+' · '+(key==='freeBytes'?bytes(p.value*1024**3):percent(p.value));scrub.setAttribute('aria-valuetext',note.textContent);};
       scrub.oninput=()=>selectPoint(Number(scrub.value));scrub.onfocus=()=>selectPoint(Number(scrub.value));
       plot.onpointermove=event=>{const rect=plot.getBoundingClientRect(),x=(event.clientX-rect.left)/rect.width*328;let index=0;for(let i=1;i<points.length;i++)if(Math.abs(points[i].x-x)<Math.abs(points[index].x-x))index=i;scrub.value=String(index);selectPoint(index);};
-      plot.append(cursor);cursor.setAttribute('cx',points.at(-1).x);cursor.setAttribute('cy',points.at(-1).y);figure.append(scrub);
+      plot.append(guide,cursor);selectPoint(points.length-1);figure.append(scrub);
     }
     container.append(figure);
   }
@@ -281,6 +281,8 @@ function renderResourceCharts(samples,start,end) {
 async function refreshServer() {
   if(serverBusy || !csrf) return;
   serverBusy=true;clearTimeout(serverTimer);$('server-refresh').disabled=true;
+  $('server-refresh').textContent='Atualizando…';
+  $('server').setAttribute('aria-busy','true');
   try {
     const s=await api('server');
     serverSnapshot=s;
@@ -321,7 +323,7 @@ async function refreshServer() {
     renderNotifications(s.alerts);
     serverHistoryRows(s);
   } catch(error) {$('server-updated').textContent='Sem consulta atual. Os dados abaixo podem estar desatualizados.';$('maintenance-updated').textContent='Sem consulta atual. Os dados abaixo podem estar desatualizados.';$('server-executor-state').textContent='Sem consulta atual';$('server-executor-state').classList.toggle('off',true);}
-  finally {serverBusy=false;$('server-refresh').disabled=false;if(csrf && ['','#server','#overview','#maintenance'].includes(window.location?.hash||''))serverTimer=setTimeout(()=>refreshServer(),60000);}
+  finally {serverBusy=false;$('server-refresh').disabled=false;$('server-refresh').textContent='Atualizar métricas';$('server').setAttribute('aria-busy','false');if(csrf && ['','#server','#overview','#maintenance'].includes(window.location?.hash||''))serverTimer=setTimeout(()=>refreshServer(),60000);}
 }
 $('server-refresh').onclick=()=>refreshServer();
 $('maintenance-refresh').onclick=()=>refreshServer();
