@@ -1,5 +1,13 @@
 # Controle do A10s
 
+## Uso atual: arquivo BAT
+
+O painel não tenta mais abrir aplicativos por protocolo. O arquivo `Controlar_A10s.bat` fica em **arquivos > Download** no armazenamento do servidor. Baixe para o notebook e execute quando quiser. Ele contém o código de controle e não depende dos arquivos `.ps1` deste repositório.
+
+Requer o ADB, scrcpy e a configuração do dispositivo já existente neste notebook. O arquivo verifica o serial antes de controlar o aparelho, procura uma conexão já pareada e pode descobri-la pelo mDNS na rede local. Não ativa ADB TCP sem autenticação. Se o aparelho estiver desconectado ou faltar uma ferramenta, mostra o erro e aguarda Enter.
+
+As instruções de protocolo abaixo permanecem apenas como documentação do método anterior. A entrega atual usa o BAT; não precisa escolher um aplicativo padrão no navegador.
+
 O botão **Controlar A10s** do painel abre o scrcpy no Windows, pelo protocolo `a10s-control://open`. Não há terminal remoto ou comandos arbitrários nesse protocolo.
 
 ## Instalação
