@@ -21,13 +21,16 @@ using System.Runtime.InteropServices;
 public static class A10sAssociationQuery {
   [DllImport("shlwapi.dll", CharSet=CharSet.Unicode, ExactSpelling=true)]
   public static extern int AssocQueryStringW(uint flags, uint kind, string association, string verb, StringBuilder output, ref uint length);
+  public static int QueryDefault(uint kind, StringBuilder output, ref uint length) {
+    return AssocQueryStringW(0x1000, kind, "a10s-control", null, output, ref length);
+  }
 }
 '@
 }
 foreach($controlQueryKindTask in @(1,2,4)) {
   $controlQueryBufferTask=New-Object System.Text.StringBuilder 1024
   [uint32]$controlQueryLengthTask=1024
-  $controlQueryResultTask=[A10sAssociationQuery]::AssocQueryStringW(0x1000,$controlQueryKindTask,'a10s-control',$null,$controlQueryBufferTask,[ref]$controlQueryLengthTask)
+  $controlQueryResultTask=[A10sAssociationQuery]::QueryDefault($controlQueryKindTask,$controlQueryBufferTask,[ref]$controlQueryLengthTask)
   $controlDiagnosticsTask += [pscustomobject]@{check=('WindowsAssociation_'+$controlQueryKindTask);ok=($controlQueryResultTask -eq 0)}
   Write-Host ('Association '+$controlQueryKindTask+': HRESULT='+$controlQueryResultTask+' value='+$controlQueryBufferTask.ToString())
 }
