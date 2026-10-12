@@ -10,6 +10,7 @@ const scrypt = promisify(crypto.scrypt);
 const model = require('./model.cjs');
 const lib = require('../src/lib.cjs');
 const {createWhatsApp} = require('./whatsapp.cjs');
+const {createTelemetry} = require('./telemetry.cjs');
 const publicDir = path.join(__dirname, 'public');
 const fail = (message, status = 400) => Object.assign(Error(message), { status });
 async function hashPassword(password, salt = crypto.randomBytes(16).toString('hex')) {
@@ -53,6 +54,7 @@ async function createPanel({ root = path.resolve(__dirname, '..'), host = '127.0
   });
   const sessions = new Map(), attempts = new Map(), jobs = new Map();
   const wa = whatsapp || createWhatsApp(root);
+  const telemetry = createTelemetry(root);
   const credentials = () => JSON.parse(fs.readFileSync(authPath, 'utf8'));
   const config = () => lib.validateConfig(JSON.parse(fs.readFileSync(path.join(root, 'config.json'), 'utf8')));
   const audit = (action, details = {}) => fs.appendFileSync(path.join(runtime, 'panel-audit.jsonl'), JSON.stringify({ timestamp: new Date().toISOString(), action, ...details }) + '\n', { mode: 0o600 });
@@ -130,6 +132,7 @@ async function createPanel({ root = path.resolve(__dirname, '..'), host = '127.0
         if (req.method !== 'GET' && req.headers['x-csrf-token'] !== session.csrf) throw fail('Sessão inválida. Entre novamente.', 403);
       };
       requireSession();
+      if (url.pathname === '/api/server' && req.method === 'GET') { respond(200, await telemetry.get()); return; }
       if (url.pathname === '/api/session' && req.method === 'GET') { respond(200, { csrf: session.csrf }); return; }
       if(url.pathname==='/api/whatsapp' && req.method==='GET') {respond(200,wa.status());return;}
       if(url.pathname==='/api/whatsapp' && req.method==='POST') {
@@ -255,7 +258,7 @@ async function createPanel({ root = path.resolve(__dirname, '..'), host = '127.0
     } catch (error) { if (!res.headersSent) respond(error.status || 500, { error: error.status ? error.message : 'Não foi possível concluir. Confira o estado do servidor.' }); else res.end(); }
   });
   server.requestTimeout = 35000; server.headersTimeout = 10000;
-  server.on('close', () => {clearInterval(maintenance);wa.close?.();});
+  server.on('close', () => {clearInterval(maintenance);wa.close?.();telemetry.close();});
   await new Promise((resolve, reject) => { server.once('error', reject); server.listen(port, host, resolve); });
   return server;
 }

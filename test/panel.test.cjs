@@ -67,9 +67,11 @@ test('API protects sessions, revision, configuration, tests and password', async
     return { status:r.status, body:await r.json(), cookie:r.headers.get('set-cookie') };
   };
   assert.equal((await request('dashboard')).status,401);
+  assert.equal((await request('server')).status,401);
   assert.equal((await request('login','POST',{password},{Origin:'http://evil.example'})).status,403);
   const login = await request('login','POST',{password}); assert.equal(login.status,200);
   cookie = login.cookie.split(';')[0]; csrf = login.body.csrf;
+  const telemetry=await request('server');assert.equal(telemetry.status,200);assert.ok(telemetry.body.storage);assert.ok(Array.isArray(telemetry.body.history));
   assert.equal((await request('enabled','POST',{enabled:false},{'X-CSRF-Token':''})).status,403);
   const dash = (await request('dashboard')).body; assert.equal(dash.config.sendingEnabled,true);
   assert.equal((await request('config','PUT',{revision:'stale',changes:{pausedDates:[]}})).status,409);
