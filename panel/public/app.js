@@ -199,7 +199,7 @@ const percent = n => Number.isFinite(n) ? n.toLocaleString('pt-BR',{maximumFract
 const duration = n => Number.isFinite(n) ? Math.floor(n/3600)+'h '+Math.floor(n%3600/60)+'min' : 'Indisponível';
 function resourceRows(id, rows) {
   const list=$(id); list.replaceChildren();
-  for(const [label,text] of rows) {const row=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=text;row.append(dt,dd);list.append(row);}
+  for(const [label,text,state] of rows) {const row=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd');if(state)row.className='resource-state-'+state;dt.textContent=label;dd.textContent=text;row.append(dt,dd);list.append(row);}
 }
 let serverBusy=false,serverTimer,serverSnapshot;
 function renderNotifications(alerts) {
@@ -270,7 +270,7 @@ function renderResourceCharts(samples,start,end) {
     if(model.count) {
       const points=model.segments.flat(),cursor=svgNode('circle',{r:4,fill:color,stroke:'#101317','stroke-width':2}),guide=svgNode('line',{y1:18,y2:90,stroke:color,'stroke-width':1,'stroke-dasharray':'3 4',opacity:.65}),scrub=document.createElement('input');
       scrub.type='range';scrub.min='0';scrub.max=String(points.length-1);scrub.value=String(points.length-1);scrub.step='1';scrub.className='chart-scrubber';scrub.setAttribute('aria-label','Selecionar leitura de '+label);
-      const selectPoint=index=>{const p=points[index];cursor.setAttribute('cx',p.x);cursor.setAttribute('cy',p.y);guide.setAttribute('x1',p.x);guide.setAttribute('x2',p.x);note.textContent=time(p.time)+' · '+(key==='freeBytes'?bytes(p.value*1024**3):percent(p.value));scrub.setAttribute('aria-valuetext',note.textContent);};
+      const selectPoint=index=>{const p=points[index],reading=key==='freeBytes'?bytes(p.value*1024**3):percent(p.value);value.textContent=reading;cursor.setAttribute('cx',p.x);cursor.setAttribute('cy',p.y);guide.setAttribute('x1',p.x);guide.setAttribute('x2',p.x);note.textContent=time(p.time)+' · '+reading;scrub.setAttribute('aria-valuetext',note.textContent);};
       scrub.oninput=()=>selectPoint(Number(scrub.value));scrub.onfocus=()=>selectPoint(Number(scrub.value));
       plot.onpointermove=event=>{const rect=plot.getBoundingClientRect(),x=(event.clientX-rect.left)/rect.width*328;let index=0;for(let i=1;i<points.length;i++)if(Math.abs(points[i].x-x)<Math.abs(points[index].x-x))index=i;scrub.value=String(index);selectPoint(index);};
       plot.append(guide,cursor);selectPoint(points.length-1);figure.append(scrub);
@@ -306,12 +306,14 @@ async function refreshServer() {
       ['Ambiente',s.system.platform+' / '+s.system.architecture+' / Node '+s.system.node]
     ]);
     resourceRows('server-services',[
-      ...s.services.map(x=>[x.name==='whatsapp'?'Executor':'Painel',x.available?(x.running?'Em execução há '+duration(x.uptime):'Parado'):'Não consultado']),
-      ['SSH local',s.ssh?.listening?'Porta 8022 acessível':'Sem resposta local na porta 8022'],
+      ...s.services.map(x=>[x.name==='whatsapp'?'Executor':'Painel',x.available?(x.running?'Em execução há '+duration(x.uptime):'Parado'):'Não consultado',x.available&&x.running?'good':'warning']),
+      ['SSH local',s.ssh?.listening?'Porta 8022 acessível':'Sem resposta local na porta 8022',s.ssh?.listening?'good':'warning'],
       ['Sinal de vida',s.executor.heartbeatAgeSeconds!==null?s.executor.heartbeatAgeSeconds+'s atrás':'Indisponível'],
-      ['Reinícios observados (24h)',s.restarts.executor+' do executor / '+s.restarts.panel+' do painel'],
+      ['Reinícios observados (24h)',s.restarts.executor+' do executor / '+s.restarts.panel+' do painel']
+    ]);
+    resourceRows('server-delivery',[
       ['Último envio confirmado',s.delivery.lastConfirmedAt?fmt(s.delivery.lastConfirmedAt):'Nenhuma confirmação disponível'],
-      ['Tentativas incertas',String(s.delivery.uncertainCount)]
+      ['Sem confirmação no histórico',String(s.delivery.uncertainCount),s.delivery.uncertainCount>0?'warning':undefined]
     ]);
     resourceRows('server-files',[
       ['Último snapshot',s.backup.available?s.backup.name+' · '+fmt(s.backup.timestamp):'Nenhum snapshot localizado'],
