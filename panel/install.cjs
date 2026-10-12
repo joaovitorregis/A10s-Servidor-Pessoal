@@ -10,6 +10,7 @@ const stage = path.resolve(__dirname,'..');
 if (!stage.startsWith(target + '/.incoming/')) throw Error('Instalador deve executar a partir da área de preparação.');
 const files = ['panel/telemetry.cjs','test/telemetry.test.cjs','panel/model.cjs','panel/server.cjs','panel/whatsapp.cjs','panel/network.cjs','panel/run.sh','panel/install.cjs','panel/public/index.html','panel/public/app.js','panel/public/style.css','panel/public/icon.svg','socket/auth.mjs','socket/groups.mjs','socket/groups.test.mjs','socket/mode.mjs','socket/mode.test.mjs','socket/test-send.mjs','socket/send.test.mjs','test/panel.test.cjs','test/whatsapp-panel.test.cjs','test/panel-network.test.cjs'];
 const digest = file => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+files.push('panel/integrations.cjs','test/integrations.test.cjs');
 const protectedFiles = ['config.json','runtime/state.json'];
 const before = protectedFiles.map(file => digest(path.join(target,file)));
 const candidateRun=configuredRun(fs.readFileSync(path.join(stage,'panel/run.sh'),'utf8'),process.env.ROTA_PANEL_HOST,process.env.ROTA_PANEL_PORT);

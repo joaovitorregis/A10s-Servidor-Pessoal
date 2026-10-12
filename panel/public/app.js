@@ -176,7 +176,25 @@ $('test-confirm').onclick = () => action(async () => { sendingTest=true; $('test
 $('password-open').onclick = () => $('password-dialog').showModal();
 $('password-form').onsubmit = event => { event.preventDefault(); action(async () => { await api('password','POST',Object.fromEntries(new FormData(event.target))); event.target.reset(); $('password-dialog').close(); loggedIn(false); toast('Senha alterada. Entre novamente.'); }); };
 // Keep every form mounted: changing screens must not discard unsaved edits.
-const panelRoutes = ['rota', 'settings', 'whatsapp', 'pauses', 'history', 'server', 'maintenance'];
+const panelRoutes = ['rota', 'settings', 'whatsapp', 'pauses', 'history', 'server', 'maintenance','access'];
+// Existing services retain their own login; never forward panel credentials to them.
+const accessLink=document.createElement('a');accessLink.href='#access';accessLink.className='nav-link';accessLink.textContent='Acessos';
+document.querySelector?.('nav[aria-label="Navegação principal"]')?.append(accessLink);
+let filesUrl=null;
+async function refreshAccess() {
+  $('access-refresh').disabled=true;
+  try {
+    const s=await api('integrations');filesUrl=s.files.url;
+    $('files-status').textContent=s.files.reachable?'Disponível':'Sem resposta';
+    $('files-open').disabled=!s.files.reachable;
+    $('files-external').hidden=!s.files.reachable;$('files-external').href=filesUrl;
+    $('remote-status').textContent='Pelo notebook';
+    $('remote-detail').textContent='Abre o scrcpy instalado no notebook. O A10s precisa estar pareado pela depuração sem fio.';
+  }catch(error){$('files-status').textContent='Sem consulta atual';$('remote-status').textContent='Sem consulta atual';$('files-open').disabled=true;$('files-external').hidden=true;}
+  finally {$('access-refresh').disabled=false;}
+}
+$('access-refresh').onclick=()=>refreshAccess();
+$('files-open').onclick=()=>{if(!filesUrl)return;$('files-browser').src=filesUrl;$('files-browser').hidden=false;};
 const bytes = n => {if(!Number.isFinite(n))return 'Indisponível';const unit=n>=1024**3?3:n>=1024**2?2:n>=1024?1:0;return (n/1024**unit).toLocaleString('pt-BR',{maximumFractionDigits:2})+' '+['B','KiB','MiB','GiB'][unit];};
 const percent = n => Number.isFinite(n) ? n.toLocaleString('pt-BR',{maximumFractionDigits:1}) + '%' : 'Indisponível';
 const duration = n => Number.isFinite(n) ? Math.floor(n/3600)+'h '+Math.floor(n%3600/60)+'min' : 'Indisponível';
@@ -324,9 +342,11 @@ function navigatePanel() {
   $('rota-nav').hidden=!moduleRoutes.includes(route);
   document.querySelectorAll('.module-link').forEach(link=>{const active=link.getAttribute('href')==='#'+route;link.classList.toggle('active',active);if(active)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');});
   const titles={server:'Visão geral',rota:'Automações / Rota',settings:'Rota / Agenda e mensagem',whatsapp:'Rota / Conta e grupos',pauses:'Rota / Pausas',history:'Atividade',maintenance:'Manutenção'};
+  titles.access='Acessos';
   if ($('page-title')) $('page-title').textContent = titles[route];
   clearTimeout(serverTimer);
   if(['server','maintenance'].includes(route) && csrf) refreshServer();
+  if(route==='access' && csrf) refreshAccess();
 }
 window.addEventListener('hashchange', navigatePanel);
 navigatePanel();

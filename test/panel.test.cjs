@@ -124,6 +124,13 @@ test('parallel login failures reserve the shared budget before hashing',async t=
   assert.equal(responses.filter(r=>r.status===429).length,8);
   assert.equal((await f.login('another-invalid-password')).status,429);
 });
+test('integration endpoint requires login and iframe policy allows only same-host file service',async t=>{
+  const f=await fixture(t);assert.equal((await f.request('integrations')).status,401);
+  const session=await f.login(),result=await f.request('integrations','GET',undefined,session);
+  assert.equal(result.status,200);assert.equal(result.body.files.url,'http://127.0.0.1:3923/');assert.equal(result.body.control.requiresPairing,true);
+  const page=await fetch(f.origin+'/');const policy=page.headers.get('content-security-policy');
+  assert.match(policy,/frame-src http:\/\/127\.0\.0\.1:3923;/);assert.match(policy,/frame-ancestors 'none'/);
+});
 test('successful login preserves reservations for concurrent failed logins',async t=>{
   const f=await fixture(t);
   const mixed=await Promise.all([f.login(),...Array.from({length:7},()=>f.login('wrong-fixture-password'))]);

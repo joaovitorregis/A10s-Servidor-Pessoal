@@ -11,6 +11,7 @@ const model = require('./model.cjs');
 const lib = require('../src/lib.cjs');
 const {createWhatsApp} = require('./whatsapp.cjs');
 const {createTelemetry} = require('./telemetry.cjs');
+const {integrationStatus} = require('./integrations.cjs');
 const publicDir = path.join(__dirname, 'public');
 const fail = (message, status = 400) => Object.assign(Error(message), { status });
 async function hashPassword(password, salt = crypto.randomBytes(16).toString('hex')) {
@@ -92,7 +93,8 @@ async function createPanel({ root = path.resolve(__dirname, '..'), host = '127.0
       if (req.method !== 'GET' && req.headers.origin !== origin) throw fail('Origem não permitida.', 403);
       res.setHeader('X-Content-Type-Options', 'nosniff');
       res.setHeader('Referrer-Policy', 'no-referrer');
-      res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'");
+      const filesOrigin='http://'+new URL(origin).hostname+':3923';
+      res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-src "+filesOrigin+"; frame-ancestors 'none'; base-uri 'none'; form-action 'self'");
       const url = new URL(req.url, origin);
       if (!url.pathname.startsWith('/api/')) {
         const assets = { '/': ['index.html', 'text/html'], '/app.js': ['app.js', 'text/javascript'], '/style.css': ['style.css', 'text/css'], '/icon.svg': ['icon.svg', 'image/svg+xml'] };
@@ -135,6 +137,7 @@ async function createPanel({ root = path.resolve(__dirname, '..'), host = '127.0
         if (req.method !== 'GET' && req.headers['x-csrf-token'] !== session.csrf) throw fail('Sessão inválida. Entre novamente.', 403);
       };
       requireSession();
+      if (url.pathname === '/api/integrations' && req.method === 'GET') {respond(200,await integrationStatus(host,authority));return;}
       if (url.pathname === '/api/server' && req.method === 'GET') { respond(200, await telemetry.get()); return; }
       if (url.pathname === '/api/session' && req.method === 'GET') { respond(200, { csrf: session.csrf }); return; }
       if(url.pathname==='/api/whatsapp' && req.method==='GET') {respond(200,wa.status());return;}
