@@ -1,11 +1,11 @@
 :root {
   color-scheme: dark;
   --ink: #f0f2f5;
-  --blue: #92b3ff;
+  --blue: #84b9ff;
   --yellow: #e9c46a;
   --fog: #101317;
   --paper: #191d23;
-  --muted: #a7b0bd;
+  --muted: #b4bdce;
   --line: #343b47;
   --success: #91d7b9;
   font-family: "Segoe UI", Arial, sans-serif;
@@ -311,6 +311,27 @@ body .server-technical { padding-block: 14px; margin-bottom: 14px; font-size: 13
 .chart-gridline { stroke: var(--line); stroke-width: 1; }
 .chart-axis { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
 .resource-chart > small { display: block; color: var(--muted); font-size: 11px; margin-top: 8px; }
+.resource-chart:nth-child(1) figcaption span { color: #c9b5ff; }
+.resource-chart:nth-child(2) figcaption span { color: #8dcaff; }
+.resource-chart:nth-child(3) figcaption span { color: #84dfb3; }
+.chart-scrubber { width: 100%; accent-color: var(--blue); height: 24px; cursor: pointer; margin: 6px 0 0; }
+.resource-chart:nth-child(1) .chart-scrubber { accent-color: #b7a7eb; }
+.resource-chart:nth-child(3) .chart-scrubber { accent-color: #8dceb1; }
+#server-memory-meter::-webkit-progress-value { background: #b7a7eb; }
+#server-memory-meter::-moz-progress-bar { background: #b7a7eb; }
+#server-battery-meter::-webkit-progress-value { background: #8dceb1; }
+#server-battery-meter::-moz-progress-bar { background: #8dceb1; }
+.notification-dock { position: relative; width: min(100%,820px); margin: 0 auto 12px; padding: 0 24px; display: flex; justify-content: flex-end; }
+.notification-button { display: inline-flex; gap: 8px; align-items: center; justify-content: center; min-height: 40px; min-width: 60px; background: #202c40; color: #bcd5ff; border: 1px solid #425978; border-radius: 8px; }
+.notification-button:hover { background: #2a3d59; }
+#notifications-count { font-size: 12px; font-weight: 650; }
+.notification-panel { position: absolute; right: 24px; top: 48px; z-index: 20; width: min(420px,calc(100vw - 48px)); max-height: 65vh; overflow-y: auto; background: #202731; border: 1px solid #59677a; border-radius: 12px; padding: 18px; box-shadow: 0 12px 32px #0005; }
+.notification-panel h2 { margin: 0 0 14px; }
+.notification-item { padding: 14px 0; border-top: 1px solid var(--line); }
+.notification-item p { margin: 0 0 8px; font-size: 13px; }
+.notification-item.warning p { color: #f1d18d; }
+.notification-item.critical p { color: #ffb8c0; }
+.notification-item a { color: var(--blue); font-size: 13px; text-decoration: underline; text-underline-offset: 3px; }
 .history-samples { border-top: 1px solid var(--line); margin-top: 20px; padding-top: 14px; }
 .history-samples summary { cursor: pointer; font-size: 13px; min-height: 28px; }
 body .server-range-label select { min-height: 36px; font-size: 12px; }

@@ -275,6 +275,14 @@ test('resource charts preserve zero values and break missing readings and elapse
   assert.equal(empty.count,0);assert.equal(empty.segments.length,0);assert.equal(empty.last,null);
 });
 
+test('notification center retains every alert and keeps critical alerts visible',async()=>{
+  const f=await uiFixture();f.context.noticeFixture=[{code:'backup_age',level:'warning',text:'Backup antigo'},{code:'storage',level:'critical',text:'Disco cheio'}];
+  vm.runInContext('renderNotifications(noticeFixture)',f.context);
+  assert.equal(f.el('notifications-count').textContent,'2');assert.equal(f.el('notifications-list').children.length,2);
+  assert.equal(f.el('server-alerts').children.length,1);assert.equal(f.el('server-alerts').children[0].textContent,'Disco cheio');
+  vm.runInContext('renderNotifications([])',f.context);assert.equal(f.el('notifications-count').textContent,'0');assert.equal(f.el('server-alerts').children.length,0);
+});
+
 test('schedule edits never overwrite group destinations or their IDs',async()=>{
   const f=await uiFixture();
   f.state.config.productionGroupId='fixture-main@g.us';f.state.config.testGroupId='fixture-test@g.us';

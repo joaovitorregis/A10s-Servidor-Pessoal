@@ -91,7 +91,7 @@ function render(d, fillForms = false) {
     $('history-body').append(row);
   }
   $('updated-at').textContent = `Atualizado em ${fmt(d.now)}`;
-  if(['','#server','#overview','#maintenance'].includes(window.location?.hash||'')) refreshServer();
+  refreshServer(); // Notifications must stay current even outside the server screen.
 }
 async function refresh(fillForms = false) {
   clearTimeout(pollTimer);
@@ -185,6 +185,23 @@ function resourceRows(id, rows) {
   for(const [label,text] of rows) {const row=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=text;row.append(dt,dd);list.append(row);}
 }
 let serverBusy=false,serverTimer,serverSnapshot;
+function renderNotifications(alerts) {
+  $('notifications-count').textContent=String(alerts.length);
+  $('notifications-toggle').setAttribute('aria-label','Notificações: '+alerts.length);
+  $('notifications-list').replaceChildren();$('server-alerts').replaceChildren();
+  if(!alerts.length) {const p=document.createElement('p');p.textContent='Nenhum aviso nesta coleta.';$('notifications-list').append(p);}
+  for(const alert of alerts) {
+    const item=document.createElement('article'),p=document.createElement('p'),link=document.createElement('a');
+    item.className='notification-item '+alert.level;p.textContent=alert.text;
+    link.textContent=alert.code==='uncertain'?'Ver atividade':alert.code.startsWith('backup')?'Ver manutenção':'Ver recursos';
+    link.href=alert.code==='uncertain'?'#history':alert.code.startsWith('backup')?'#maintenance':'#server';
+    link.onclick=()=>{$('notifications-panel').hidden=true;$('notifications-toggle').setAttribute('aria-expanded','false');};
+    item.append(p,link);$('notifications-list').append(item);
+    if(alert.level==='critical') {const warning=document.createElement('p');warning.className='notice';warning.textContent=alert.text;$('server-alerts').append(warning);}
+  }
+}
+$('notifications-toggle').onclick=()=>{const panel=$('notifications-panel');panel.hidden=!panel.hidden;$('notifications-toggle').setAttribute('aria-expanded',String(!panel.hidden));};
+window.addEventListener('keydown',event=>{if(event.key==='Escape'){$('notifications-panel').hidden=true;$('notifications-toggle').setAttribute('aria-expanded','false');}});
 function serverVital(name, metric, main, detail, amount, warning=false) {
   $('server-'+name+'-value').textContent=metric?.available?main:'Indisponível';
   $('server-'+name+'-detail').textContent=metric?.available?detail:'Sem leitura do sistema';
@@ -232,7 +249,16 @@ function renderResourceCharts(samples,start,end) {
     for(const segment of model.segments) {plot.append(svgNode('polyline',{points:segment.map(p=>p.x.toFixed(2)+','+p.y.toFixed(2)).join(' '),fill:'none',stroke:color,'stroke-width':2,'stroke-linejoin':'round'}));if(segment.length===1)plot.append(svgNode('circle',{cx:segment[0].x,cy:segment[0].y,r:2.5,fill:color}));}
     const time=n=>new Date(n).toLocaleTimeString('pt-BR',{timeZone:'America/Fortaleza',hour:'2-digit',minute:'2-digit'});
     plot.append(svgNode('text',{x:36,y:109,class:'chart-axis'},time(start)),svgNode('text',{x:320,y:109,'text-anchor':'end',class:'chart-axis'},time(end)));
-    figure.append(plot);const note=document.createElement('small');note.textContent=model.count?model.count+' leituras'+(model.segments.length>1?' · com lacunas':'')+(end-Date.parse(model.last.timestamp)>150000?' · última em '+time(Date.parse(model.last.timestamp)):''):'Nenhuma leitura neste período';figure.append(note);container.append(figure);
+    figure.append(plot);const note=document.createElement('small');note.textContent=model.count?model.count+' leituras'+(model.segments.length>1?' · com lacunas':'')+(end-Date.parse(model.last.timestamp)>150000?' · última em '+time(Date.parse(model.last.timestamp)):''):'Nenhuma leitura neste período';figure.append(note);
+    if(model.count) {
+      const points=model.segments.flat(),cursor=svgNode('circle',{r:4,fill:color,stroke:'#101317','stroke-width':2}),scrub=document.createElement('input');
+      scrub.type='range';scrub.min='0';scrub.max=String(points.length-1);scrub.value=String(points.length-1);scrub.step='1';scrub.className='chart-scrubber';scrub.setAttribute('aria-label','Selecionar leitura de '+label);
+      const selectPoint=index=>{const p=points[index];cursor.setAttribute('cx',p.x);cursor.setAttribute('cy',p.y);note.textContent=time(p.time)+' · '+(key==='freeBytes'?bytes(p.value*1024**3):percent(p.value));scrub.setAttribute('aria-valuetext',note.textContent);};
+      scrub.oninput=()=>selectPoint(Number(scrub.value));scrub.onfocus=()=>selectPoint(Number(scrub.value));
+      plot.onpointermove=event=>{const rect=plot.getBoundingClientRect(),x=(event.clientX-rect.left)/rect.width*328;let index=0;for(let i=1;i<points.length;i++)if(Math.abs(points[i].x-x)<Math.abs(points[index].x-x))index=i;scrub.value=String(index);selectPoint(index);};
+      plot.append(cursor);cursor.setAttribute('cx',points.at(-1).x);cursor.setAttribute('cy',points.at(-1).y);figure.append(scrub);
+    }
+    container.append(figure);
   }
 }
 async function refreshServer() {
@@ -275,8 +301,7 @@ async function refreshServer() {
       ...s.logs.map(x=>[x.name.split('/').pop(),x.bytes===null?'Arquivo ausente':bytes(x.bytes)])
       ,['Último evento',s.events.length?s.events.at(-1).event+' · '+fmt(s.events.at(-1).timestamp):'Nenhum evento disponível']
     ]);
-    $('server-alerts').replaceChildren();
-    for(const alert of s.alerts) {const p=document.createElement('p');p.className='notice';p.textContent=alert.text;$('server-alerts').append(p);}
+    renderNotifications(s.alerts);
     serverHistoryRows(s);
   } catch(error) {$('server-updated').textContent='Sem consulta atual. Os dados abaixo podem estar desatualizados.';$('maintenance-updated').textContent='Sem consulta atual. Os dados abaixo podem estar desatualizados.';$('server-executor-state').textContent='Sem consulta atual';$('server-executor-state').classList.toggle('off',true);}
   finally {serverBusy=false;$('server-refresh').disabled=false;if(csrf && ['','#server','#overview','#maintenance'].includes(window.location?.hash||''))serverTimer=setTimeout(()=>refreshServer(),60000);}

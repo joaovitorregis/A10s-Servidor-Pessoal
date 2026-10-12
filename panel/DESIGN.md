@@ -9,6 +9,7 @@ Navegação em abas e conteúdo centralizado até 820px, seguindo a densidade do
 Visão geral concentra recursos e saúde do executor. Automações contém Rota, agenda, conta e pausas. Atividade apresenta envios registrados. Manutenção apresenta backups e logs.
 Formulários permanecem montados ao navegar para preservar edições não salvas.
 Histórico apresenta gráficos de memória usada, espaço livre e bateria em períodos de 1, 6 e 24 horas. Eixo horizontal usa o horário real; ausência de leitura ou intervalo maior que 150 segundos interrompe a linha. Percentuais usam escala de 0 a 100; espaço livre usa escala local em GiB com limites visíveis. A tabela de até 60 amostras fica recolhida.
+Memória usa violeta, armazenamento azul e bateria verde, com nomes explícitos além da cor. Ponteiro e seletor de teclado permitem inspecionar leituras reais por horário. O sino reúne todos os avisos com links para a área correspondente; alertas críticos também permanecem na visão geral. Notificações refletem a última coleta, sem apagar ou modificar registros.
 
 ## Estados
 Executor ativo não comprova entrega. Leituras ausentes não viram zero. Sem consulta recente, manter os últimos valores com aviso explícito. Foco de teclado e medidores mantêm significado além da cor. Navegação e tabelas podem rolar localmente em telas estreitas; a página não deve transbordar.
