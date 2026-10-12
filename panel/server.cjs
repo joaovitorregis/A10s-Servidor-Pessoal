@@ -1,5 +1,6 @@
 'use strict';
 const http = require('node:http');
+const net = require('node:net');
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
@@ -21,7 +22,8 @@ async function validPassword(password, auth) {
   const hash = await hashPassword(password, auth.salt);
   return crypto.timingSafeEqual(Buffer.from(hash.hash, 'hex'), Buffer.from(auth.hash, 'hex'));
 }
-async function createPanel({ root = path.resolve(__dirname, '..'), host = '127.0.0.1', port = 8787, service, sendTest, whatsapp, aliases = [] } = {}) {
+async function createPanel({ root = path.resolve(__dirname, '..'), host = '127.0.0.1', port = 8787, service, sendTest, whatsapp, aliases = [], trustedPeers = [] } = {}) {
+  if(!Array.isArray(trustedPeers) || trustedPeers.some(address=>{const parts=String(address).split('.').map(Number);return net.isIP(address)!==4 || !(address==='127.0.0.1' || parts[0]===100 && parts[1]>=64 && parts[1]<=127);})) throw Error('Use IPs individuais da rede privada para acesso confiável.');
   if(!Array.isArray(aliases) || aliases.some(name=>typeof name!=='string' || !(/^[a-z][a-z0-9-]{0,62}$/i.test(name) || /^[a-z0-9.-]+\.ts\.net$/i.test(name)))) throw Error('Nome privado inválido para o painel.');
   const runtime = path.join(root, 'runtime');
   fs.mkdirSync(runtime, { recursive: true, mode: 0o700 });
@@ -130,10 +132,21 @@ async function createPanel({ root = path.resolve(__dirname, '..'), host = '127.0
           respond(200, { csrf });
         }); return;
       }
-      const token = req.headers.cookie?.match(/(?:^|;\s*)rota_session=([a-f0-9]{64})(?:;|$)/)?.[1];
-      const session = sessions.get(token);
+      const peer=String(req.socket.remoteAddress||'').replace(/^::ffff:/,'');
+      let token = req.headers.cookie?.match(/(?:^|;\s*)rota_session=([a-f0-9]{64})(?:;|$)/)?.[1];
+      let session = sessions.get(token);
+      // Trust the actual socket peer, never browser-supplied forwarding headers.
+      if(url.pathname==='/api/session' && req.method==='GET' && trustedPeers.includes(peer) && (!session || session.expires<Date.now())) {
+        if(req.headers['sec-fetch-site']==='cross-site') throw fail('Origem não permitida.',403);
+        token=crypto.randomBytes(32).toString('hex');session={csrf:crypto.randomBytes(24).toString('hex'),expires:Date.now()+12*3600000,trustedPeer:peer};
+        if(sessions.size>=100)sessions.delete(sessions.keys().next().value);
+        sessions.set(token,session);
+        res.setHeader('Set-Cookie',`rota_session=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=43200`);
+        audit('trusted_peer_session',{peer});
+      }
       const requireSession = () => {
         if (!session || sessions.get(token) !== session || session.expires < Date.now()) throw fail('Entre no painel para continuar.', 401);
+        if(session.trustedPeer && session.trustedPeer!==peer) throw fail('Sessão restrita ao dispositivo autorizado.',401);
         if (req.method !== 'GET' && req.headers['x-csrf-token'] !== session.csrf) throw fail('Sessão inválida. Entre novamente.', 403);
       };
       requireSession();
@@ -268,5 +281,8 @@ async function createPanel({ root = path.resolve(__dirname, '..'), host = '127.0
   await new Promise((resolve, reject) => { server.once('error', reject); server.listen(port, host, resolve); });
   return server;
 }
-if (require.main === module) createPanel({ host: process.env.PANEL_HOST || '127.0.0.1', port: Number(process.env.PANEL_PORT || 8787), aliases: (process.env.PANEL_ALIASES || 'a10s').split(',').filter(Boolean) }).then(server => console.log(JSON.stringify({ event: 'panel_listening', address: server.address().address, port: server.address().port }))).catch(() => { console.error('Painel não iniciou. Confira a rede privada e a porta.'); process.exitCode = 1; });
+if (require.main === module) {
+  const trustedPath=path.resolve(__dirname,'../runtime/panel-trusted-peers.json');
+  Promise.resolve().then(()=>createPanel({ host: process.env.PANEL_HOST || '127.0.0.1', port: Number(process.env.PANEL_PORT || 8787), aliases: (process.env.PANEL_ALIASES || 'a10s').split(',').filter(Boolean),trustedPeers:fs.existsSync(trustedPath)?JSON.parse(fs.readFileSync(trustedPath,'utf8')).peers:[] })).then(server => console.log(JSON.stringify({ event: 'panel_listening', address: server.address().address, port: server.address().port }))).catch(() => { console.error('Painel não iniciou. Confira rede privada, porta e dispositivos confiáveis.'); process.exitCode = 1; });
+}
 module.exports = { createPanel };

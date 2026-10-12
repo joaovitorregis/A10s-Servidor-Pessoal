@@ -21,3 +21,9 @@ Remova somente a chave `HKCU\Software\Classes\a10s-control` no Editor do Registr
 ## Arquivos
 
 A área Acessos incorpora o serviço existente na porta 3923. Ele mantém sua própria autenticação e permissões para armazenamento interno, cartão SD e Termux. O painel não encaminha sua senha nem amplia as permissões do Android. “Disponível” indica conexão TCP; não comprova login nem acesso a todos os volumes.
+
+## Entrada sem senha em dispositivo confiável
+
+Opcionalmente, o servidor lê `runtime/panel-trusted-peers.json`, com formato `{"peers":["IP_TAILSCALE_DO_NOTEBOOK"]}`. Esse arquivo privado não deve ser publicado. Use somente endereços individuais, nunca uma sub-rede ou o endereço de um proxy compartilhado.
+
+A entrada automática verifica o endereço real da conexão, ignora cabeçalhos de encaminhamento e cria uma sessão com cookie HttpOnly, SameSite Strict e token CSRF. A sessão automática fica vinculada ao IP autorizado. Os demais dispositivos continuam usando a senha. Remover o IP da lista e reiniciar somente o painel revoga a liberação e as sessões existentes, sem alterar a senha ou a automação. “Sair” encerra a sessão atual; recarregar a página no notebook autorizado permite uma nova entrada automática.

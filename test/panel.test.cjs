@@ -102,11 +102,11 @@ test('API protects sessions, revision, configuration, tests and password', async
   assert.equal((await request('login','POST',{password:'fixture-password-new-123'})).status,200);
 });
 
-async function fixture(t, config = base) {
+async function fixture(t, config = base, options = {}) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(),'rota-panel-regression-'));
   model.durableWrite(path.join(root,'config.json'),config);
   model.durableWrite(path.join(root,'runtime/state.json'),{version:1,deliveries:{}});
-  const server = await createPanel({root,host:'127.0.0.1',port:0,service:async()=>({healthy:true})});
+  const server = await createPanel({root,host:'127.0.0.1',port:0,service:async()=>({healthy:true}),...options});
   t.after(async()=>{server.closeAllConnections();await new Promise(r=>server.close(r));fs.rmSync(root,{recursive:true,force:true});});
   const origin = `http://127.0.0.1:${server.address().port}`;
   const password = fs.readFileSync(path.join(root,'runtime/panel-access.txt'),'utf8').match(/Senha inicial: (.+)/)[1];
@@ -123,6 +123,21 @@ test('parallel login failures reserve the shared budget before hashing',async t=
   assert.equal(responses.filter(r=>r.status===401).length,8);
   assert.equal(responses.filter(r=>r.status===429).length,8);
   assert.equal((await f.login('another-invalid-password')).status,429);
+});
+test('trusted notebook receives a normal session but mutations still require CSRF',async t=>{
+  const f=await fixture(t,base,{trustedPeers:['127.0.0.1']});
+  assert.equal((await f.request('dashboard')).status,401);
+  const session=await f.request('session');assert.equal(session.status,200);assert.ok(session.cookie);assert.ok(session.body.csrf);
+  assert.equal((await f.request('dashboard','GET',undefined,session)).status,200);
+  assert.equal((await f.request('enabled','POST',{enabled:false},session)).status,403);
+  const crossSite=await fetch(f.origin+'/api/session',{headers:{'Sec-Fetch-Site':'cross-site'}});assert.equal(crossSite.status,403);
+  const revoked=await f.request('logout','POST',{}, {...session,csrf:session.body.csrf});assert.equal(revoked.status,200);
+  assert.equal((await f.request('dashboard','GET',undefined,session)).status,401);
+});
+test('forwarded headers cannot impersonate a trusted notebook',async t=>{
+  const f=await fixture(t,base,{trustedPeers:['100.100.10.20']});
+  const result=await fetch(f.origin+'/api/session',{headers:{'X-Forwarded-For':'100.100.10.20','X-Real-IP':'100.100.10.20'}});
+  assert.equal(result.status,401);assert.equal((await f.login()).status,200);
 });
 test('integration endpoint requires login and iframe policy allows only same-host file service',async t=>{
   const f=await fixture(t);assert.equal((await f.request('integrations')).status,401);
