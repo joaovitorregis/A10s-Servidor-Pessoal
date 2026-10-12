@@ -54,7 +54,7 @@ test('API protects sessions, revision, configuration, tests and password', async
   model.durableWrite(path.join(root,'config.json'),base);
   model.durableWrite(path.join(root,'runtime/state.json'),{ version: 1, deliveries: {} });
   let tests = 0;
-  const server = await createPanel({ root, host: '127.0.0.1', port: 0,
+  const server = await createPanel({ root, host: '127.0.0.1', port: 0, aliases:['a10s'],
     service: async () => ({ healthy: true, schedulerRunning: true, heartbeatAgeSeconds: 2 }),
     sendTest: async () => { tests++; return { status: 'server_accepted' }; }
   });
@@ -71,6 +71,12 @@ test('API protects sessions, revision, configuration, tests and password', async
   assert.equal((await request('login','POST',{password},{Origin:'http://evil.example'})).status,403);
   const login = await request('login','POST',{password}); assert.equal(login.status,200);
   cookie = login.cookie.split(';')[0]; csrf = login.body.csrf;
+  const byHost=(host,method='GET')=>new Promise((resolve,reject)=>{
+    const req=http.request(origin+'/api/'+(method==='GET'?'session':'enabled'),{method,headers:{Host:host,Cookie:cookie,Origin:origin,'X-CSRF-Token':csrf,'Content-Type':'application/json'}},res=>{res.resume();res.on('end',()=>resolve(res.statusCode));});req.on('error',reject);req.end(method==='GET'?undefined:JSON.stringify({enabled:false}));
+  });
+  assert.equal(await byHost('a10s:'+server.address().port),200);
+  assert.equal(await byHost('evil.test:'+server.address().port),403);
+  assert.equal(await byHost('a10s:'+server.address().port,'POST'),403,'Origin of the IP cannot mutate via the alias');
   const telemetry=await request('server');assert.equal(telemetry.status,200);assert.ok(telemetry.body.storage);assert.ok(Array.isArray(telemetry.body.history));
   assert.equal((await request('enabled','POST',{enabled:false},{'X-CSRF-Token':''})).status,403);
   const dash = (await request('dashboard')).body; assert.equal(dash.config.sendingEnabled,true);
@@ -189,7 +195,7 @@ async function uiFixture() {
   const weekdays=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(value=>({...node(),value}));
   const state={config:JSON.parse(JSON.stringify(base)),offline:false};
   const data=()=>({config:JSON.parse(JSON.stringify(state.config)),revision:model.revision(state.config),health:{healthy:true,heartbeatAgeSeconds:1},history:[],preview:'fixture',nextRun:null,now:new Date().toISOString()});
-  const context={document:{getElementById:el,createElement:node,createTextNode:text=>({textContent:text}),querySelectorAll:selector=>selector==='.day-picker input'?weekdays:selector==='.day-picker input:checked'?weekdays.filter(x=>x.checked):selector.startsWith('#app-view button')?['toggle-enabled','wa-check','wa-pair','wa-disable','wa-production','wa-test','wa-save-production','wa-save-test','test-open'].map(el):[]},window:{addEventListener(){},confirm:()=>true},Intl,Date,TypeError,FormData:class{},setTimeout:()=>0,clearTimeout(){},console,
+  const context={document:{getElementById:el,createElement:node,createTextNode:text=>({textContent:text}),querySelectorAll:selector=>selector==='.day-picker input'?weekdays:selector==='.day-picker input:checked'?weekdays.filter(x=>x.checked):selector.startsWith('#app-view button')?['toggle-enabled','wa-check','wa-pair','wa-disable','wa-production','wa-test','wa-save-production','wa-save-test','test-open'].map(el):[]},window:{location:{hash:"#rota"},addEventListener(){},confirm:()=>true},Intl,Date,TypeError,FormData:class{},setTimeout:()=>0,clearTimeout(){},console,
     fetch:async(url,options)=>{
       if(state.networkFailure) throw new TypeError('Failed to fetch');
       if(state.offline)throw Error('fixture offline');
@@ -218,11 +224,12 @@ test('panel routes show one screen and retain unsaved fields, including unknown 
   const f=await uiFixture();
   f.el('student-lines').value='1. Unsaved navigation edit';
   f.el('settings-form').oninput();
-  for(const route of ['settings','whatsapp','pauses','history','overview','unknown']) {
+  for(const route of ['settings','whatsapp','pauses','history','rota','server','maintenance','overview','unknown']) {
     f.context.window.location={hash:'#'+route};
     vm.runInContext('navigatePanel()',f.context);
-    const expected=route==='unknown'?'overview':route;
-    for(const id of ['overview','settings','whatsapp','pauses','history']) assert.equal(f.el(id).hidden,id!==expected);
+    const expected=['unknown','overview'].includes(route)?'server':route;
+    for(const id of ['rota','settings','whatsapp','pauses','history','server','maintenance']) assert.equal(f.el(id).hidden,id!==expected);
+    assert.equal(f.el('rota-nav').hidden,!['rota','settings','whatsapp','pauses'].includes(expected));
     assert.equal(f.el('student-lines').value,'1. Unsaved navigation edit');
   }
   assert.equal(vm.runInContext('dirty',f.context),true);

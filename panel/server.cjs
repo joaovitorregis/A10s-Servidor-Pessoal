@@ -20,7 +20,8 @@ async function validPassword(password, auth) {
   const hash = await hashPassword(password, auth.salt);
   return crypto.timingSafeEqual(Buffer.from(hash.hash, 'hex'), Buffer.from(auth.hash, 'hex'));
 }
-async function createPanel({ root = path.resolve(__dirname, '..'), host = '127.0.0.1', port = 8787, service, sendTest, whatsapp } = {}) {
+async function createPanel({ root = path.resolve(__dirname, '..'), host = '127.0.0.1', port = 8787, service, sendTest, whatsapp, aliases = [] } = {}) {
+  if(!Array.isArray(aliases) || aliases.some(name=>typeof name!=='string' || !(/^[a-z][a-z0-9-]{0,62}$/i.test(name) || /^[a-z0-9.-]+\.ts\.net$/i.test(name)))) throw Error('Nome privado inválido para o painel.');
   const runtime = path.join(root, 'runtime');
   fs.mkdirSync(runtime, { recursive: true, mode: 0o700 });
   const authPath = path.join(runtime, 'panel-auth.json');
@@ -84,8 +85,10 @@ async function createPanel({ root = path.resolve(__dirname, '..'), host = '127.0
     };
     try {
       const allowedHost = `${host}:${server.address().port}`;
-      if (req.headers.host !== allowedHost) throw fail('Endereço não permitido.', 403);
-      const origin = `http://${allowedHost}`;
+      const authority = req.headers.host?.toLowerCase();
+      const allowed = [allowedHost.toLowerCase(),...aliases.map(name=>`${name.toLowerCase()}:${server.address().port}`)];
+      if (!allowed.includes(authority)) throw fail('Endereço não permitido.', 403);
+      const origin = `http://${authority}`;
       if (req.method !== 'GET' && req.headers.origin !== origin) throw fail('Origem não permitida.', 403);
       res.setHeader('X-Content-Type-Options', 'nosniff');
       res.setHeader('Referrer-Policy', 'no-referrer');
@@ -262,5 +265,5 @@ async function createPanel({ root = path.resolve(__dirname, '..'), host = '127.0
   await new Promise((resolve, reject) => { server.once('error', reject); server.listen(port, host, resolve); });
   return server;
 }
-if (require.main === module) createPanel({ host: process.env.PANEL_HOST || '127.0.0.1', port: Number(process.env.PANEL_PORT || 8787) }).then(server => console.log(JSON.stringify({ event: 'panel_listening', address: server.address().address, port: server.address().port }))).catch(() => { console.error('Painel não iniciou. Confira a rede privada e a porta.'); process.exitCode = 1; });
+if (require.main === module) createPanel({ host: process.env.PANEL_HOST || '127.0.0.1', port: Number(process.env.PANEL_PORT || 8787), aliases: (process.env.PANEL_ALIASES || 'a10s').split(',').filter(Boolean) }).then(server => console.log(JSON.stringify({ event: 'panel_listening', address: server.address().address, port: server.address().port }))).catch(() => { console.error('Painel não iniciou. Confira a rede privada e a porta.'); process.exitCode = 1; });
 module.exports = { createPanel };
