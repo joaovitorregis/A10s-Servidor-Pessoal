@@ -12,6 +12,14 @@
   background: var(--fog);
   font-synthesis: none;
 }
+.resource-list { margin: 0; }
+.resource-list > div { display: grid; grid-template-columns: minmax(145px, 1fr) minmax(0, 2fr); gap: 18px; padding: 15px 0; border-bottom: 1px solid var(--line); }
+.resource-list > div:last-child { border-bottom: 0; }
+.resource-list dt { color: var(--muted); }
+.resource-list dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+#server-alerts .notice { margin-bottom: 12px; }
+#server-history { font-variant-numeric: tabular-nums; }
+@media (max-width: 600px) { .resource-list > div { grid-template-columns: 1fr; gap: 5px; } #server .title-row { align-items: flex-start; flex-wrap: wrap; gap: 15px; } }
 * { box-sizing: border-box; }
 ::selection { background: #f2c94c; color: #142d43; }
 input, textarea { caret-color: var(--blue); }

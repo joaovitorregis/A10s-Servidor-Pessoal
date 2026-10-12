@@ -90,6 +90,7 @@ function render(d, fillForms = false) {
     $('history-body').append(row);
   }
   $('updated-at').textContent = `Atualizado em ${fmt(d.now)}`;
+  if(window.location?.hash==='#server') refreshServer();
 }
 async function refresh(fillForms = false) {
   clearTimeout(pollTimer);
@@ -174,7 +175,62 @@ $('test-confirm').onclick = () => action(async () => { sendingTest=true; $('test
 $('password-open').onclick = () => $('password-dialog').showModal();
 $('password-form').onsubmit = event => { event.preventDefault(); action(async () => { await api('password','POST',Object.fromEntries(new FormData(event.target))); event.target.reset(); $('password-dialog').close(); loggedIn(false); toast('Senha alterada. Entre novamente.'); }); };
 // Keep every form mounted: changing screens must not discard unsaved edits.
-const panelRoutes = ['overview', 'settings', 'whatsapp', 'pauses', 'history'];
+const panelRoutes = ['overview', 'settings', 'whatsapp', 'pauses', 'history', 'server'];
+const bytes = n => {if(!Number.isFinite(n))return 'Indisponível';const unit=n>=1024**3?3:n>=1024**2?2:n>=1024?1:0;return (n/1024**unit).toLocaleString('pt-BR',{maximumFractionDigits:2})+' '+['B','KiB','MiB','GiB'][unit];};
+const percent = n => Number.isFinite(n) ? n.toLocaleString('pt-BR',{maximumFractionDigits:1}) + '%' : 'Indisponível';
+const duration = n => Number.isFinite(n) ? Math.floor(n/3600)+'h '+Math.floor(n%3600/60)+'min' : 'Indisponível';
+function resourceRows(id, rows) {
+  const list=$(id); list.replaceChildren();
+  for(const [label,text] of rows) {const row=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=text;row.append(dt,dd);list.append(row);}
+}
+let serverBusy=false,serverTimer;
+async function refreshServer() {
+  if(serverBusy || !csrf) return;
+  serverBusy=true;clearTimeout(serverTimer);$('server-refresh').disabled=true;
+  try {
+    const s=await api('server');
+    $('server-updated').textContent='Coletado em '+fmt(s.timestamp)+'. Atualização a cada minuto.';
+    const available=(m,fn)=>m?.available?fn(m):'Indisponível';
+    resourceRows('server-resources',[
+      ['Armazenamento',available(s.storage,m=>bytes(m.free)+' livres de '+bytes(m.total)+' · '+percent(m.percent)+' usados')],
+      ['Memória RAM',available(s.memory,m=>bytes(m.available)+' disponíveis de '+bytes(m.total)+' · '+percent(m.percent)+' usados')],
+      ['CPU global',available(s.cpu,m=>percent(m.percent))],
+      ['Carga (1 / 5 / 15 min)',available(s.load,m=>m.values.map(n=>n.toFixed(2)).join(' / '))],
+      ['Bateria',available(s.battery,m=>m.percent+'% · '+(m.charging?'Com alimentação':'Sem alimentação'))],
+      ['Temperatura da bateria',s.battery?.available&&s.battery.temperature!==null?s.battery.temperature+' °C':'Indisponível'],
+      ['Tempo desde o boot',available(s.boot,m=>duration(m.seconds))],
+      ['Consumo do painel',bytes(s.panel.rss)+' RAM · '+percent(s.panel.cpuPercent)+' de um núcleo'],
+      ['Tempo do painel',duration(s.panel.uptime)],
+      ['Tráfego da rede',available(s.network,m=>m.description)],
+      ['Ambiente',s.system.platform+' / '+s.system.architecture+' / Node '+s.system.node]
+    ]);
+    resourceRows('server-services',[
+      ...s.services.map(x=>[x.name==='whatsapp'?'Executor':'Painel',x.available?(x.running?'Em execução há '+duration(x.uptime):'Parado'):'Não consultado']),
+      ['SSH local',s.ssh?.listening?'Porta 8022 acessível':'Sem resposta local na porta 8022'],
+      ['Sinal de vida',s.executor.heartbeatAgeSeconds!==null?s.executor.heartbeatAgeSeconds+'s atrás':'Indisponível'],
+      ['Reinícios observados (24h)',s.restarts.executor+' do executor / '+s.restarts.panel+' do painel'],
+      ['Último envio confirmado',s.delivery.lastConfirmedAt?fmt(s.delivery.lastConfirmedAt):'Nenhuma confirmação disponível'],
+      ['Tentativas incertas',String(s.delivery.uncertainCount)],
+      ['Entrega','Processo ativo não comprova entrega. A confirmação está no histórico de envios.']
+    ]);
+    resourceRows('server-files',[
+      ['Último snapshot',s.backup.available?s.backup.name+' · '+fmt(s.backup.timestamp):'Nenhum snapshot localizado'],
+      ['Backups de instalação',s.backupSize?.available?bytes(s.backupSize.bytes):'Tamanho indisponível'],
+      ['Integridade','A presença do manifesto não comprova restauração.'],
+      ...s.logs.map(x=>[x.name.split('/').pop(),x.bytes===null?'Arquivo ausente':bytes(x.bytes)])
+      ,['Último evento',s.events.length?s.events.at(-1).event+' · '+fmt(s.events.at(-1).timestamp):'Nenhum evento disponível']
+    ]);
+    $('server-alerts').replaceChildren();
+    for(const alert of s.alerts) {const p=document.createElement('p');p.className='notice';p.textContent=alert.text;$('server-alerts').append(p);}
+    if(!s.alerts.length) {const p=document.createElement('p');p.className='muted';p.textContent='Nenhum alerta nas métricas disponíveis.';$('server-alerts').append(p);}
+    const unavailable=['memory','storage','cpu','load','battery','boot','network'].filter(k=>!s[k]?.available);
+    if(unavailable.length) {const p=document.createElement('p');p.className='muted';p.textContent='Algumas métricas não são acessíveis neste ambiente. Indisponível não significa zero.';$('server-alerts').append(p);}
+    $('server-history').replaceChildren();
+    for(const sample of s.history.slice(-60).reverse()) {const tr=document.createElement('tr');for(const text of [fmt(sample.timestamp),percent(sample.memoryPercent),bytes(sample.freeBytes),percent(sample.cpuPercent),percent(sample.batteryPercent)]){const td=document.createElement('td');td.textContent=text;tr.append(td);}$('server-history').append(tr);}
+  } catch(error) {$('server-updated').textContent='Sem consulta atual. Os dados abaixo podem estar desatualizados.';toast(error.message,true);}
+  finally {serverBusy=false;$('server-refresh').disabled=false;if(csrf && window.location?.hash==='#server')serverTimer=setTimeout(()=>refreshServer(),60000);}
+}
+$('server-refresh').onclick=()=>refreshServer();
 function navigatePanel() {
   const requested = (window.location?.hash || '#overview').slice(1);
   const route = panelRoutes.includes(requested) ? requested : 'overview';
@@ -187,6 +243,8 @@ function navigatePanel() {
   });
   const current = document.querySelectorAll('.nav-link.active')[0];
   if ($('page-title')) $('page-title').textContent = current?.textContent || 'Visão geral';
+  clearTimeout(serverTimer);
+  if(route==='server' && csrf) refreshServer();
 }
 window.addEventListener('hashchange', navigatePanel);
 navigatePanel();
