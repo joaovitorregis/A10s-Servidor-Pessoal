@@ -1,6 +1,8 @@
-# Automação WhatsApp · Ônibus universitário
+# A10s · Servidor pessoal Android
 
-Automação da publicação da lista diária do ônibus universitário em um grupo de WhatsApp. O sistema monta a mensagem com a data e os participantes e faz o envio nos dias e horários configurados.
+Reaproveitamento de um celular antigo e usado como servidor pessoal para executar minhas automações. O Samsung Galaxy A10s roda os serviços com Termux; uso o notebook para acessar, configurar e acompanhar o servidor.
+
+Este repositório reúne a estrutura do servidor e a Rota, uma das automações executadas nele, voltada ao transporte universitário.
 
 Autor: João Vitor Regis.
 
@@ -20,7 +22,7 @@ Aplicação pessoal implantada em Android/Termux, com painel privado e testes em
 
 ## Um celular como servidor
 
-O projeto foi implantado em um Samsung Galaxy A10s com Termux, usando o celular como servidor. Node.js executa o agendador e o conector do WhatsApp; o notebook foi utilizado para desenvolvimento e manutenção.
+O A10s ganhou uma nova função: manter serviços e automações pessoais em execução, sem depender do notebook ligado. O painel permite acompanhar os recursos do aparelho e gerenciar a Rota. Node.js executa o agendador e o conector do WhatsApp; o notebook é utilizado para desenvolvimento e manutenção.
 
 A execução no celular teve um envio agendado confirmado em 25/09/2026, às 02:00, no fuso America/Fortaleza.
 
