@@ -1,5 +1,7 @@
 # Arquitetura e decisões
 
+O A10s executa o painel e a automação Rota no Termux. O notebook acessa a instalação pela rede privada e não precisa permanecer ligado para o agendamento funcionar. O serviço de arquivos tem autenticação própria e não participa do envio de mensagens.
+
 ```text
 Notebook ── rede privada ── painel HTTP no Termux
                               │ configuração validada

@@ -1,6 +1,6 @@
-# Painel Rota
+# Operação da Rota no painel A10s
 
-Interface para controlar uma instalação já existente da automação no Termux. Permite habilitar/bloquear envios automáticos, alterar horário e conteúdo, pausar datas, consultar a prévia e o histórico e confirmar um envio de teste.
+A área Automações do painel A10s reúne os controles da Rota. Permite habilitar ou bloquear envios automáticos, alterar horário e conteúdo, pausar datas, consultar a prévia e o histórico e confirmar um envio de teste. Pressupõe uma instalação da automação no Termux.
 
 ## Segurança e configuração
 
@@ -58,7 +58,7 @@ node --test test/panel.test.cjs
 
 A demonstração usa `config.example.json`, dados fictícios e envio simulado em `http://127.0.0.1:8788`. Não é o painel de produção. As fontes e os assets são locais, sem dependência de CDN.
 
-O design usa sinalização de transporte como referência. A direção visual está em `panel/DESIGN.md`.
+A direção visual do servidor e da área Rota está em `panel/DESIGN.md`.
 
 ## Verificação contínua
 

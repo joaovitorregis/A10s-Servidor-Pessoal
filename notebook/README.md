@@ -6,9 +6,11 @@ O painel não tenta mais abrir aplicativos por protocolo. O arquivo `Controlar_A
 
 Requer o ADB, scrcpy e a configuração do dispositivo já existente neste notebook. O arquivo verifica o serial antes de controlar o aparelho, procura uma conexão já pareada e pode descobri-la pelo mDNS na rede local. Não ativa ADB TCP sem autenticação. Se o aparelho estiver desconectado ou faltar uma ferramenta, mostra o erro e aguarda Enter.
 
-As instruções de protocolo abaixo permanecem apenas como documentação do método anterior. A entrega atual usa o BAT; não precisa escolher um aplicativo padrão no navegador.
+## Método anterior: protocolo do Windows
 
-O botão **Controlar A10s** do painel abre o scrcpy no Windows, pelo protocolo `a10s-control://open`. Não há terminal remoto ou comandos arbitrários nesse protocolo.
+Os scripts de protocolo permanecem para referência e manutenção de instalações antigas. O painel atual não oferece o botão de lançamento. Para usar o BAT, ignore esta seção; não é necessário escolher um aplicativo padrão no navegador.
+
+O protocolo `a10s-control://open` foi usado para abrir o scrcpy no Windows. Ele não oferece terminal remoto ou comandos arbitrários.
 
 ## Instalação
 

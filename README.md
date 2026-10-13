@@ -1,18 +1,33 @@
-# A10s · Servidor pessoal Android
+# A10s | Servidor pessoal Android
 
-Reaproveitamento de um celular antigo e usado como servidor pessoal para executar minhas automações. O Samsung Galaxy A10s roda os serviços com Termux; uso o notebook para acessar, configurar e acompanhar o servidor.
+Reaproveitei um Samsung Galaxy A10s antigo para manter minhas automações em execução. O celular roda os serviços com Termux, e uso o notebook para acessar os arquivos, acompanhar o aparelho e fazer manutenção.
 
-Este repositório reúne a estrutura do servidor e a Rota, uma das automações executadas nele, voltada ao transporte universitário.
+Este repositório contém o painel de acompanhamento do A10s, as ferramentas de operação e a Rota, uma das automações executadas no servidor. A Rota publica a lista do transporte universitário no WhatsApp nos dias e horários configurados.
 
 Autor: João Vitor Regis.
 
 [![Tests](https://github.com/joaovitorregis/Automacao-WhatsApp-Onibus/actions/workflows/test.yml/badge.svg)](https://github.com/joaovitorregis/Automacao-WhatsApp-Onibus/actions/workflows/test.yml)
 
-Aplicação pessoal implantada em Android/Termux, com painel privado e testes em Windows/Linux. Usa um conector não oficial do WhatsApp.
+## O servidor
+
+O painel reúne leituras de armazenamento, memória e bateria, além do estado dos serviços. O histórico preserva as amostras disponíveis e mostra lacunas quando não houve coleta. Métricas bloqueadas pelo Android aparecem como indisponíveis.
+
+O acesso acontece pela rede privada. O serviço de arquivos usa copyparty, com autenticação própria; o controle da tela usa ADB e scrcpy no notebook. Esses serviços dependem da configuração de cada instalação e não ficam prontos apenas ao clonar o repositório.
+
+| Componente | Função |
+| --- | --- |
+| A10s | Celular Android utilizado como servidor pessoal |
+| Termux e runit | Ambiente de execução e supervisão dos processos |
+| Painel web | Monitoramento do aparelho e operação da Rota |
+| Rota | Agendamento das listas do transporte universitário |
+| Notebook | Desenvolvimento, acesso remoto e manutenção |
 
 ## Documentação
 
 - [Instalação Android](docs/servidor-android.md)
+- [Servidor pessoal e acessos](docs/a10s.md)
+- [Monitoramento e alertas](docs/monitoramento.md)
+- [Ferramentas do notebook](notebook/README.md)
 - [Painel e comandos do notebook](docs/painel-rota.md)
 - [Diagnóstico e incidentes](docs/operacao.md)
 - [Arquitetura e decisões](docs/arquitetura.md)
@@ -20,13 +35,13 @@ Aplicação pessoal implantada em Android/Termux, com painel privado e testes em
 - [Validação real de recuperação](docs/validacao-recuperacao.md)
 - [Contribuição e critérios de entrega](CONTRIBUTING.md)
 
-## Um celular como servidor
+## Execução e validação
 
 O A10s ganhou uma nova função: manter serviços e automações pessoais em execução, sem depender do notebook ligado. O painel permite acompanhar os recursos do aparelho e gerenciar a Rota. Node.js executa o agendador e o conector do WhatsApp; o notebook é utilizado para desenvolvimento e manutenção.
 
 A execução no celular teve um envio agendado confirmado em 25/09/2026, às 02:00, no fuso America/Fortaleza.
 
-## O que o código faz
+## A automação Rota
 
 - Monta a lista com a data e os participantes configurados.
 - Agenda a execução por dias da semana, horário e janela de recuperação.
@@ -43,7 +58,9 @@ ACK confirma aceitação pelo servidor; não significa leitura pelos integrantes
 
 JavaScript · Node.js · Termux · Baileys · runit. O código também preserva componentes da adaptação anterior por navegador com whatsapp-web.js; o conector de operação no Android fica em `socket/`.
 
-## Como configurar
+## Desenvolvimento local
+
+Use Node.js 24. Para conhecer o painel sem conectar uma conta do WhatsApp, execute `node panel/preview.cjs`. A prévia usa dados fictícios e envio simulado em `http://127.0.0.1:8788`.
 
 ```sh
 # Na raiz do projeto
@@ -71,13 +88,14 @@ scheduler.cjs         agendador
 service.cjs           controle do supervisor
 config.example.json   configuração fictícia, com envios desativados
 docs/                 instalação e limites de operação
-panel/                painel web privado e interface responsiva
+panel/                painel do A10s e controles da Rota
+notebook/             ferramentas de acesso ao celular
 painel.ps1            instalação e consulta pelo notebook
 ```
 
-## Painel de controle Rota
+## Operação pelo painel
 
-O painel está instalado no servidor Android. Permite controlar a agenda, pausar datas, editar a mensagem e consultar confirmações. A configuração de exemplo usa localhost e dados fictícios.
+O painel A10s separa os recursos do servidor dos controles da Rota. A área Automações permite controlar a agenda, pausar datas, editar a mensagem e consultar confirmações. A configuração de exemplo usa localhost e dados fictícios.
 
 O acesso é pelo notebook na rede privada, sem exposição pública pela internet.
 
@@ -91,7 +109,9 @@ O funcionamento depende de conexão, energia e permissão para executar o Termux
 
 A configuração pessoal, a sessão do WhatsApp e os registros de operação ficam fora do repositório. Cada instalação requer a configuração dos grupos e participantes e a vinculação de uma conta do WhatsApp.
 
-## Licenças
+## Autoria e licenças
+
+Projeto pessoal de [João Vitor Regis](https://github.com/joaovitorregis), desenvolvido com apoio de ferramentas de IA.
 
 - Código, scripts, testes e configuração de exemplo: [MIT](LICENSE).
 - README e documentação em `docs/`: [CC BY 4.0](LICENSE-MATERIALS), com atribuição a João Vitor Regis.
