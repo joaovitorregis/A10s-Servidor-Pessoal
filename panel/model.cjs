@@ -50,6 +50,15 @@ function nextRun(config, now = new Date()) {
   }
   return null;
 }
+function activePausedDates(config, now = new Date()) {
+  const today = lib.getDateKey(config, now);
+  const parts = new Intl.DateTimeFormat('en-CA', {timeZone:config.timezone, hour:'2-digit', minute:'2-digit', hourCycle:'h23'}).formatToParts(now);
+  const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
+  const minute = Number(values.hour) * 60 + Number(values.minute);
+  const end = config.schedule.hour * 60 + config.schedule.minute + config.schedule.graceMinutes;
+  // Match the executor's inclusive, minute-based recovery window.
+  return (config.pausedDates || []).filter(date => date > today || (date === today && minute <= end));
+}
 function tailJson(file, limit = 80) {
   if (!fs.existsSync(file)) return [];
   const fd = fs.openSync(file, 'r');
@@ -62,4 +71,4 @@ function tailJson(file, limit = 80) {
     });
   } finally { fs.closeSync(fd); }
 }
-module.exports = { revision, validateChanges, durableWrite, nextRun, tailJson };
+module.exports = { revision, validateChanges, durableWrite, nextRun, activePausedDates, tailJson };

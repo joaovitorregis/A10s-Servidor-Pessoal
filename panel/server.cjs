@@ -203,7 +203,7 @@ async function createPanel({ root = path.resolve(__dirname, '..'), host = '127.0
         deliveries.push(...tests.slice(0, 50));
         deliveries.sort((a, b) => String(b.timestamp).localeCompare(String(a.timestamp)));
         let health; try { health = await callService('status'); } catch { health = { healthy: false, schedulerRunning: false }; }
-        respond(200, { config: { ...c, pausedDates: c.pausedDates || [] }, revision: model.revision(c), health, whatsapp:wa.status(), nextRun: model.nextRun(c), today: lib.getDateKey(c), preview: lib.buildMessage(c), history: deliveries.slice(0, 100), events: model.tailJson(path.join(root, 'socket/runtime/events.jsonl')), now: new Date().toISOString() }); return;
+        respond(200, { config: { ...c, pausedDates: c.pausedDates || [] }, activePausedDates: model.activePausedDates(c), revision: model.revision(c), health, whatsapp:wa.status(), nextRun: model.nextRun(c), today: lib.getDateKey(c), preview: lib.buildMessage(c), history: deliveries.slice(0, 100), events: model.tailJson(path.join(root, 'socket/runtime/events.jsonl')), now: new Date().toISOString() }); return;
       }
       if (url.pathname === '/api/config' && req.method === 'PUT') {
         const body = await readBody();

@@ -43,6 +43,17 @@ test('validation rejects privileged fields, impossible dates and invalid schedul
   assert.throws(() => model.validateChanges({ studentLines: ['x\ny'] }));
   assert.deepEqual(model.validateChanges({ pausedDates: ['2026-10-05','2026-10-05'] }), { pausedDates: ['2026-10-05'] });
 });
+test('expired pauses leave the visible list after the inclusive recovery window without changing config', () => {
+  const config = {...base, pausedDates:['2026-10-04','2026-10-05','2026-10-06']};
+  const before = JSON.stringify(config);
+  for (const instant of ['2026-10-05T04:59:59Z','2026-10-05T05:00:00Z','2026-10-05T05:20:59Z']) {
+    assert.deepEqual(model.activePausedDates(config,new Date(instant)),['2026-10-05','2026-10-06']);
+  }
+  assert.deepEqual(model.activePausedDates(config,new Date('2026-10-05T05:21:00Z')),['2026-10-06']);
+  assert.deepEqual(model.activePausedDates(config,new Date('2026-10-05T02:59:00Z')),['2026-10-05','2026-10-06']);
+  assert.equal(JSON.stringify(config),before);
+  assert.deepEqual(model.activePausedDates({...base,pausedDates:undefined},new Date('2026-10-05T05:00:00Z')),[]);
+});
 test('next run respects Fortaleza, pauses and disabled sending', () => {
   const now = new Date('2026-10-02T23:00:00Z');
   assert.equal(model.nextRun(base,now),'2026-10-05T05:00:00.000Z');

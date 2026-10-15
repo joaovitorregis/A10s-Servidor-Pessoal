@@ -71,13 +71,14 @@ function render(d, fillForms = false) {
     document.querySelectorAll('.day-picker input').forEach(el => el.checked = c.schedule.weekdays.includes(el.value));
   }
   $('pause-list').replaceChildren();
-  for (const date of c.pausedDates) {
+  const activePauses = d.activePausedDates || c.pausedDates;
+  for (const date of activePauses) {
     const chip = document.createElement('span'); chip.className = 'pause-chip'; chip.append(document.createTextNode(dateFmt(date)));
     const button = document.createElement('button'); button.textContent = '×'; button.setAttribute('aria-label', `Remover pausa de ${dateFmt(date)}`);
     button.onclick = () => action(async () => { await save({ pausedDates: dashboard.config.pausedDates.filter(x => x !== date) }); toast('Pausa removida.'); });
     chip.append(button); $('pause-list').append(chip);
   }
-  if (!c.pausedDates.length) { const empty = document.createElement('small'); empty.textContent = 'Nenhuma data pausada.'; $('pause-list').append(empty); }
+  if (!activePauses.length) { const empty = document.createElement('small'); empty.textContent = 'Nenhuma pausa pendente.'; $('pause-list').append(empty); }
   $('history-body').replaceChildren(); $('empty-history').hidden = d.history.length > 0;
   const statuses = { sent: 'Confirmado pelo servidor', server_accepted: 'Confirmado pelo servidor', attempting: 'Iniciado · confira o WhatsApp', uncertain: 'Resultado incerto', not_started: 'Não iniciado' };
   for (const record of d.history) {
