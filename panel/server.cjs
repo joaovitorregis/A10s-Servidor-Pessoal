@@ -67,6 +67,10 @@ async function createPanel({ root = path.resolve(__dirname, '..'), host = '127.0
   let authentication = Promise.resolve();
   const serializeAuth = fn => { const result = authentication.then(fn); authentication = result.catch(() => {}); return result; };
   const maintenance = setInterval(() => {
+    serialize(() => {
+      const removed = model.removeExpiredPauses(path.join(root, 'config.json'));
+      if (removed) audit('expired_pauses_removed', {count:removed});
+    }).catch(() => { console.error('Não foi possível limpar pausas vencidas.'); });
     const now = Date.now();
     for (const [key, item] of sessions) if (item.expires < now) sessions.delete(key);
     for (const [key, item] of attempts) if (item.until < now) attempts.delete(key);

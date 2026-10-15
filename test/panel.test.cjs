@@ -54,6 +54,20 @@ test('expired pauses leave the visible list after the inclusive recovery window 
   assert.equal(JSON.stringify(config),before);
   assert.deepEqual(model.activePausedDates({...base,pausedDates:undefined},new Date('2026-10-05T05:00:00Z')),[]);
 });
+test('expired pauses are deleted from config atomically without changing other settings', t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(),'pause-cleanup-'));
+  t.after(()=>fs.rmSync(root,{recursive:true,force:true}));
+  const file = path.join(root,'config.json');
+  const config = {...base, pausedDates:['2026-10-04','2026-10-05','2026-10-06']};
+  fs.writeFileSync(file,JSON.stringify(config));
+  assert.equal(model.removeExpiredPauses(file,new Date('2026-10-05T05:20:59Z')),1);
+  assert.deepEqual(JSON.parse(fs.readFileSync(file)),{...config,pausedDates:['2026-10-05','2026-10-06']});
+  assert.equal(model.removeExpiredPauses(file,new Date('2026-10-05T05:21:00Z')),1);
+  const after = fs.readFileSync(file,'utf8');
+  assert.deepEqual(JSON.parse(after),{...config,pausedDates:['2026-10-06']});
+  assert.equal(model.removeExpiredPauses(file,new Date('2026-10-05T05:22:00Z')),0);
+  assert.equal(fs.readFileSync(file,'utf8'),after);
+});
 test('next run respects Fortaleza, pauses and disabled sending', () => {
   const now = new Date('2026-10-02T23:00:00Z');
   assert.equal(model.nextRun(base,now),'2026-10-05T05:00:00.000Z');

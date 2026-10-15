@@ -59,6 +59,13 @@ function activePausedDates(config, now = new Date()) {
   // Match the executor's inclusive, minute-based recovery window.
   return (config.pausedDates || []).filter(date => date > today || (date === today && minute <= end));
 }
+function removeExpiredPauses(file, now = new Date()) {
+  const config = lib.validateConfig(JSON.parse(fs.readFileSync(file, 'utf8')));
+  const remaining = activePausedDates(config, now);
+  const removed = (config.pausedDates || []).length - remaining.length;
+  if (removed) durableWrite(file, {...config, pausedDates:remaining});
+  return removed;
+}
 function tailJson(file, limit = 80) {
   if (!fs.existsSync(file)) return [];
   const fd = fs.openSync(file, 'r');
@@ -71,4 +78,4 @@ function tailJson(file, limit = 80) {
     });
   } finally { fs.closeSync(fd); }
 }
-module.exports = { revision, validateChanges, durableWrite, nextRun, activePausedDates, tailJson };
+module.exports = { revision, validateChanges, durableWrite, nextRun, activePausedDates, removeExpiredPauses, tailJson };
