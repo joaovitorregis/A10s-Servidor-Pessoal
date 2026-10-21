@@ -6,7 +6,7 @@ Este repositório contém o painel de acompanhamento do A10s, as ferramentas de 
 
 Autor: João Vitor Regis.
 
-[![Tests](https://github.com/joaovitorregis/Automacao-WhatsApp-Onibus/actions/workflows/test.yml/badge.svg)](https://github.com/joaovitorregis/Automacao-WhatsApp-Onibus/actions/workflows/test.yml)
+[![Tests](https://github.com/joaovitorregis/A10s-Servidor-Pessoal/actions/workflows/test.yml/badge.svg)](https://github.com/joaovitorregis/A10s-Servidor-Pessoal/actions/workflows/test.yml)
 
 ## O servidor
 
