@@ -17,6 +17,14 @@ O destino precisa ser novo e fora da origem. O programa recusa destinos existent
 
 Copie também os scripts de boot por um meio privado. O snapshot da aplicação não inclui configurações do Android, chaves do SSH ou preferências do Tailscale. Ao transferir um arquivo compactado, confira SHA-256 antes e depois.
 
+`runtime/panel-trusted-peers.json` também fica fora do snapshot. Após restaurar, a entrada por dispositivo confiável precisa ser reconfigurada manualmente; até lá, use a senha do painel. A exclusão evita transportar silenciosamente uma autorização vinculada à rede da instalação anterior.
+
+## Serviços adicionais privados
+
+O snapshot preserva somente `run` e `down` das definições `runtime/services/whatsapp` e `runtime/services/rota-panel`. Definições de outros serviços, incluindo a supervisão privada do copyparty, não são incluídas. Dados do armazenamento interno, cartão SD e volumes externos servidos por copyparty também não estão cobertos por essa lista. Um arquivo dentro das pastas da aplicação pode entrar no snapshot, mas isso não constitui backup completo dos volumes.
+
+Mantenha separadamente um inventário privado por serviço: definição do supervisor e boot, executável e versão, configuração e autenticação, caminhos dos volumes, permissões, destino do backup e data do último ensaio. Copie e valide esse material por meio privado, com integridade e acesso restrito, antes de considerar a recuperação completa. O repositório não publica essas definições, endereços, credenciais ou caminhos privados. O ensaio histórico da Rota não valida a recuperação do copyparty nem a disponibilidade contínua dos serviços adicionais.
+
 ## Ensaio de restauração
 
 ```sh
