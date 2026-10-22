@@ -8,6 +8,10 @@ O código publicado não contém endereço do servidor, senha real, participante
 
 Não use `0.0.0.0` nem exponha a porta no roteador. O HTTP deve ficar restrito a um transporte privado protegido, por exemplo Tailscale. Não foi implementado acesso público, HTTPS direto ou recuperação automática de senha.
 
+`panel/run.sh` é o modelo. O instalador copia esse arquivo, com o endereço configurado, para `runtime/services/rota-panel/run`; runit executa essa cópia. Editar apenas o modelo depois da instalação não altera o serviço ativo.
+
+Na instalação manual inicial, configure o modelo com o endereço privado e a porta, crie `runtime/services/rota-panel`, copie o modelo para `runtime/services/rota-panel/run`, dê permissão de execução com `chmod 700 runtime/services/rota-panel/run` e confirme que o `runsvdir` existente supervisiona `runtime/services` (a estrutura usada por `service.cjs start`). O supervisor detecta o novo diretório; confirme com `sv status "$PWD/runtime/services/rota-panel"`. Esse procedimento pressupõe a automação e seu supervisor já configurados. Para alterar uma instalação existente, guarde uma cópia privada do `runtime/services/rota-panel/run`, altere `PANEL_HOST` e `PANEL_PORT` nesse arquivo preservando caminhos e demais parâmetros privados, e reinicie somente o painel com `sv -w 15 restart "$PWD/runtime/services/rota-panel"`, a partir da raiz da instalação. Confira `sv status "$PWD/runtime/services/rota-panel"` e a resposta HTTP no endereço privado configurado. Uma reinstalação pelo notebook regrava a cópia a partir do modelo e de `ROTA_PANEL_URL`; revise antes eventuais personalizações privadas. Esses passos são operação manual, não parte dos testes locais.
+
 A primeira execução gera a senha em `runtime/panel-access.txt` e o hash em `runtime/panel-auth.json`. Ambos são privados e ignorados pelo Git. Use Alterar senha após entrar. A senha de demonstração em `panel/preview.cjs` é fictícia e funciona somente na demonstração isolada.
 
 ## Conta WhatsApp e grupos
@@ -42,6 +46,8 @@ $env:ROTA_PANEL_URL = 'http://ip-privado-do-servidor:8787'
 O instalador pressupõe a automação funcionando em `~/whatsapp-onibus-rota-1-android`, com runit, flock, Node.js e dependências socket instalados. Faz upload para uma área de preparação, executa testes sem envio real, guarda backup e instala o painel e os adaptadores de conexão/grupos/teste. Agenda e estado dos envios são preservados. `ROTA_PANEL_URL` é obrigatória na instalação; o endereço é gravado explicitamente no serviço, e a resposta HTTP é conferida ao terminar.
 
 Os testes remotos usam a biblioteca e a política já instaladas no servidor. Antes de substituir arquivos, o instalador compara seus hashes com os da área de testes e cancela se houver diferença. Não atualiza essas dependências silenciosamente.
+
+A preparação inclui os testes de telemetria e integrações exigidos pelo instalador e os executa antes da promoção. `node --test test/panel-stage.test.cjs` ensaia o comando público no Windows com SSH, upload e HTTP interceptados, valida todo o inventário candidato e roda os testes na cópia temporária. Usa dependências locais instaladas; não acessa servidor, credenciais ou serviços operacionais. A suíte abre apenas listeners locais de teste. Esse ensaio não comprova uma instalação real no Termux.
 
 Se outro acesso alterar os mesmos campos enquanto você edita, o painel preserva seu texto e informa o conflito. Use “Carregar campos atuais” para descartar a edição e recuperar a versão do servidor. Pausas e ativação não descartam os campos em edição. Falhas de conexão aparecem como erro, nunca como atualização confirmada.
 

@@ -4,11 +4,11 @@
 
 O painel não tenta mais abrir aplicativos por protocolo. O arquivo `Controlar_A10s.bat` fica em **arquivos > Download** no armazenamento do servidor. Baixe para o notebook e execute quando quiser. Ele contém o código de controle e não depende dos arquivos `.ps1` deste repositório.
 
-Requer o ADB, scrcpy e a configuração do dispositivo já existente neste notebook. O arquivo verifica o serial antes de controlar o aparelho, procura uma conexão já pareada e pode descobri-la pelo mDNS na rede local. Não ativa ADB TCP sem autenticação. Se o aparelho estiver desconectado ou faltar uma ferramenta, mostra o erro e aguarda Enter.
+Requer o ADB, scrcpy e a configuração inicial do dispositivo em `HKCU\Software\Classes\a10s-control`. Em notebook novo, faça o pareamento e execute uma vez o procedimento de [Instalação](#instalação) abaixo: `install-control.ps1` grava serial, endereço e caminhos das ferramentas nessa chave, também usada pelo BAT. Depois disso, o BAT dispensa os `.ps1` em cada abertura. O arquivo verifica o serial antes de controlar o aparelho, procura uma conexão já pareada e pode descobri-la pelo mDNS na rede local. Não ativa ADB TCP sem autenticação. Se o aparelho estiver desconectado ou faltar uma ferramenta, mostra o erro e aguarda Enter.
 
 ## Método anterior: protocolo do Windows
 
-Os scripts de protocolo permanecem para referência e manutenção de instalações antigas. O painel atual não oferece o botão de lançamento. Para usar o BAT, ignore esta seção; não é necessário escolher um aplicativo padrão no navegador.
+Os scripts de protocolo permanecem para referência e manutenção de instalações antigas. O painel atual não oferece o botão de lançamento. O BAT usa a mesma configuração inicial da seção Instalação, mas não exige escolher um aplicativo padrão no navegador.
 
 O protocolo `a10s-control://open` foi usado para abrir o scrcpy no Windows. Ele não oferece terminal remoto ou comandos arbitrários.
 
@@ -32,7 +32,7 @@ O diagnóstico também consulta `AssocQueryStringW` com `ASSOCF_IS_PROTOCOL` par
 
 ## Remoção
 
-Remova somente a chave `HKCU\Software\Classes\a10s-control` no Editor do Registro. Isso remove o botão como lançador no Windows, sem alterar o pareamento ADB ou a automação do celular.
+Remova somente a chave `HKCU\Software\Classes\a10s-control` no Editor do Registro. Isso também remove os parâmetros necessários ao BAT, que deixará de funcionar até repetir a instalação. Não altera o pareamento ADB ou a automação do celular.
 Para remover também o cadastro na lista de aplicativos padrão, remova a entrada **A10s - Controle remoto** de `HKCU\Software\RegisteredApplications` e as chaves próprias `HKCU\Software\A10sControl` e `HKCU\Software\Classes\A10sControl.Url`. Preserve todas as outras entradas.
 
 ## Arquivos

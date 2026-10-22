@@ -13,7 +13,7 @@
     "scheduled": "node scheduler.cjs --once"
   },
   "engines": {
-    "node": ">=18"
+    "node": "24.x"
   },
   "dependencies": {
     "whatsapp-web.js": "1.34.7"

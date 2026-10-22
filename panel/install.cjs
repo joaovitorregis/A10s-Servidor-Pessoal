@@ -16,7 +16,7 @@ const before = protectedFiles.map(file => digest(path.join(target,file)));
 const candidateRun=configuredRun(fs.readFileSync(path.join(stage,'panel/run.sh'),'utf8'),process.env.ROTA_PANEL_HOST,process.env.ROTA_PANEL_PORT);
 if(JSON.parse(fs.readFileSync(path.join(target,'config.json'),'utf8')).sendingEnabled!==false) throw Error('Desative envios antes de atualizar o conector/painel');
 // Test the exact dependencies that remain installed, not newer local copies.
-for (const file of ['src/lib.cjs','socket/policy.mjs','socket/auth-store.mjs','socket/lock.mjs']) {
+for (const file of ['src/lib.cjs','src/health.cjs','socket/policy.mjs','socket/auth-store.mjs','socket/lock.mjs']) {
   if (digest(path.join(stage,file)) !== digest(path.join(target,file))) throw Error('Dependência instalada difere da versão testada: '+file);
 }
 for (const file of files) if (!fs.statSync(path.join(stage,file)).isFile()) throw Error('Arquivo candidato ausente: '+file);

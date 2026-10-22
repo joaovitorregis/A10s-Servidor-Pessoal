@@ -60,7 +60,7 @@ JavaScript · Node.js · Termux · Baileys · runit. O código também preserva 
 
 ## Desenvolvimento local
 
-Use Node.js 24. Para conhecer o painel sem conectar uma conta do WhatsApp, execute `node panel/preview.cjs`. A prévia usa dados fictícios e envio simulado em `http://127.0.0.1:8788`.
+Use Node.js 24.x, a faixa suportada e testada na CI; outras versões não têm compatibilidade declarada. Para conhecer o painel sem conectar uma conta do WhatsApp, execute `node panel/preview.cjs`. A prévia usa dados fictícios e envio simulado em `http://127.0.0.1:8788`.
 
 ```sh
 # Na raiz do projeto
